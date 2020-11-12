@@ -1,0 +1,23 @@
+Milestones:
+
+-Code the Makefile 
+-See heapclient Makefile in lab4
+-Demonstrate reading a message over SPI bus (simulate sending an SPI message from our laptops)
+-Demonstrate sending a message over the SPI bus and getting the correct message
+-Send the SPI message over to our laptops
+-Demonstrate Waveshare library sends stuff over the SPI bus
+-Make sure Waveshare library is bug free when working with staff SPI module
+-Read an NFC frame of bytes
+-Write an NFC frame of bytes
+-Demonstrate reading and displaying NFC tag
+-Demonstrate writing an NFC tag
+
+
+Parallel strategy: 
+
+*asterisk indicates substantial work
+non-asterisk indicates basic understanding/use 
+
+-Person 1: *(1)* (2) (3) *(4)* *(6)* (7)
+-Person 2: *(2)* (3) (4) *(5)* (6) *(7)*
+-Person 3: (2) *(3)* (4) *(5)* *(6)* (7)
