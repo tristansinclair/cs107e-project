@@ -1,7 +1,12 @@
 /**
- *  @file main.c
+ *  @file nfc_app.c
  * ---------------------
  * @brief Demo application for displaying nfc capabilities.
  */
 
-int main(int argc, char *argv[]) { return 0; }
+#include <uart.h>
+
+void main(void)
+{
+    uart_putchar(EOT);
+}
