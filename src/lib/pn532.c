@@ -95,10 +95,12 @@ void rpi_spi_rw(byte_t *data, size_t bufsize)
 
 void pn532_read_data(byte_t *data, size_t bufsize)
 {
+    // Copy data into new frame with read byte as first byte
     byte_t frame[bufsize + 1];
-    memcpy(frame, 0, bufsize + 1);
+    memset(frame, 0, bufsize + 1);
     frame[0] = _SPI_DATAREAD;
 
+    // Transmits frame bytes and copies response into data
     timer_delay_ms(5);
     rpi_spi_rw(frame, bufsize + 1);
     memcpy(data, frame + 1, bufsize);
@@ -106,16 +108,18 @@ void pn532_read_data(byte_t *data, size_t bufsize)
 
 void pn532_write_data(byte_t *data, size_t bufsize)
 {
+    // Copy data into new frame with write byte as first byte
     byte_t frame[bufsize + 1];
-    memcpy(frame, 0, bufsize + 1);
+    memcpy(frame + 1, data, bufsize);
     frame[0] = _SPI_DATAWRITE;
 
-    memcpy(frame + 1, data, bufsize);
+    // Write frame
     rpi_spi_rw(frame, bufsize + 1);
 }
 
 int pn532_write_frame(byte_t *data, size_t bufsize)
 {
+    // Checks for valid bufsize
     if (bufsize > PN532_FRAME_MAX_LENGTH || bufsize < 1)
     {
         return PN532_STATUS_ERROR; // Data must be array of 1 to 255 bytes.
@@ -221,7 +225,7 @@ bool pn532_wait_ready(unsigned int timeout)
     unsigned int timestart = timer_get_ticks();
     unsigned int timenow;
     while (1)
-    { // compare ns to ms
+    {
         timer_delay_ms(10);
         rpi_spi_rw(status, sizeof(status));
         if (status[1] == _SPI_READY)
