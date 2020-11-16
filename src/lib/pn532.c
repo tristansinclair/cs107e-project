@@ -8,6 +8,18 @@
 
 #define HIGH 1
 #define LOW 0
+#define PN532_FRAME_MAX_LENGTH 255
+#define PN532_DEFAULT_TIMEOUT 1000
+
+// SPI codes
+#define _SPI_STATREAD (0x02)
+#define _SPI_DATAWRITE (0x01)
+#define _SPI_DATAREAD (0x03)
+#define _SPI_READY (0x01)
+#define _SPI_CHANNEL (0)
+
+const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
+const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
 static unsigned int _RESET_PIN, _NSS_PIN;
 
 void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
@@ -36,9 +48,9 @@ void pn532_reset()
     timer_delay_ms(100);
 }
 
-char reverse_byte(char byte)
+byte_t reverse_byte(byte_t byte)
 {
-    char result = 0;
+    byte_t result = 0;
     for (char i = 0; i < 8; i++)
     {
         result <<= 1;
@@ -53,9 +65,9 @@ void pn532_wakeup()
     // Send any special commands/data to wake up PN532
     byte_t data[] = {0x00};
     timer_delay_ms(1000);
-    gpio_write(_NSS_PIN, 0);
+    gpio_write(_NSS_PIN, LOW);
     timer_delay_ms(2); // T_osc_start
-    rpi_spi_rw(data, 1);
+    rpi_spi_rw(data, HIGH);
     timer_delay_ms(1000);
 }
 
@@ -63,21 +75,19 @@ void rpi_spi_rw(byte_t *data, size_t bufsize)
 {
     gpio_write(_NSS_PIN, LOW);
     timer_delay_ms(1);
-    // #ifndef _SPI_HARDWARE_LSB
-    //     for (uint8_t i = 0; i < bufsize; i++)
-    //     {
-    //         data[i] = reverse_byte(data[i]);
-    //     }
-    //     wiringPiSPIDataRW(_SPI_CHANNEL, data, bufsize);
-    //     for (uint8_t i = 0; i < count; i++)
-    //     {
-    //         data[i] = reverse_byte(data[i]);
-    //     }
-    // #else
-    // #endif
+
+    for (int i = 0; i < bufsize; i++)
+    {
+        data[i] = reverse_byte(data[i]);
+    }
+
     byte_t rx[bufsize];
     spi_transfer(data, rx, bufsize);
-    memcpy(data, rx, bufsize);
+
+    for (int i = 0; i < bufsize; i++)
+    {
+        data[i] = reverse_byte(rx[i]);
+    }
 
     timer_delay_ms(1);
     gpio_write(_NSS_PIN, HIGH);
@@ -102,4 +112,129 @@ void pn532_write_data(byte_t *data, size_t bufsize)
 
     memcpy(frame + 1, data, bufsize);
     rpi_spi_rw(frame, bufsize + 1);
+}
+
+int pn532_write_frame(byte_t *data, size_t bufsize)
+{
+    if (bufsize > PN532_FRAME_MAX_LENGTH || bufsize < 1)
+    {
+        return PN532_STATUS_ERROR; // Data must be array of 1 to 255 bytes.
+    }
+    // Build frame to send as:
+    // - Preamble (0x00)
+    // - Start code  (0x00, 0xFF)
+    // - Command length (1 byte)
+    // - Command length checksum
+    // - Command bytes
+    // - Checksum
+    // - Postamble (0x00)
+
+    byte_t frame[PN532_FRAME_MAX_LENGTH + 7];
+    byte_t checksum = 0;
+    frame[0] = PN532_PREAMBLE;
+    frame[1] = PN532_STARTCODE1;
+    frame[2] = PN532_STARTCODE2;
+    for (byte_t i = 0; i < 3; i++)
+    {
+        checksum += frame[i];
+    }
+    frame[3] = bufsize & 0xFF;
+    frame[4] = (~bufsize + 1) & 0xFF;
+    for (byte_t i = 0; i < bufsize; i++)
+    {
+        frame[5 + i] = data[i];
+        checksum += data[i];
+    }
+    frame[bufsize + 5] = ~checksum & 0xFF;
+    frame[bufsize + 6] = PN532_POSTAMBLE;
+
+    pn532_write_data(frame, bufsize + 7);
+
+    return PN532_STATUS_OK;
+}
+
+int pn532_read_frame(byte_t *response, size_t bufsize)
+{
+    byte_t buf[PN532_FRAME_MAX_LENGTH + 7];
+    byte_t checksum = 0;
+
+    // Read frame with expected length of data.
+    pn532_read_data(buf, bufsize + 7);
+
+    // Swallow all the 0x00 values that preceed 0xFF.
+    byte_t offset = 0;
+    while (buf[offset] == 0x00)
+    {
+        offset += 1;
+        if (offset >= bufsize + 8)
+        {
+            // pn532->log("Response frame preamble does not contain 0x00FF!");
+            printf("\nResponse frame preamble does not contain 0x00FF!\n");
+            return PN532_STATUS_ERROR;
+        }
+    }
+    if (buf[offset] != 0xFF)
+    {
+        // pn532->log("Response frame preamble does not contain 0x00FF!");
+        printf("\nResponse frame preamble does not contain 0x00FF!\n");
+        return PN532_STATUS_ERROR;
+    }
+    offset += 1;
+    if (offset >= bufsize + 8)
+    {
+        // pn532->log("Response contains no data!");
+        printf("\nResponse contains no data\n");
+        return PN532_STATUS_ERROR;
+    }
+    // Check length & length checksum match.
+    byte_t frame_len = buf[offset];
+    if (((frame_len + buf[offset + 1]) & 0xFF) != 0)
+    {
+        // pn532->log("Response length checksum did not match length!");
+        printf("\nResponse length checksum did not match length!\n");
+        return PN532_STATUS_ERROR;
+    }
+    // Check frame checksum value matches bytes.
+    for (byte_t i = 0; i < frame_len + 1; i++)
+    {
+        checksum += buf[offset + 2 + i];
+    }
+    checksum &= 0xFF;
+    if (checksum != 0)
+    {
+        // pn532->log("Response checksum did not match expected checksum");
+        printf("\nResponse checksum did not match expected checksum\n");
+        return PN532_STATUS_ERROR;
+    }
+    // Return frame data.
+    for (byte_t i = 0; i < frame_len; i++)
+    {
+        response[i] = buf[offset + 2 + i];
+    }
+    return frame_len;
+}
+
+bool pn532_wait_ready(unsigned int timeout)
+{
+    byte_t status[] = {_SPI_STATREAD, 0x00};
+
+    unsigned int timestart = timer_get_ticks();
+    unsigned int timenow;
+    while (1)
+    { // compare ns to ms
+        timer_delay_ms(10);
+        rpi_spi_rw(status, sizeof(status));
+        if (status[1] == _SPI_READY)
+        {
+            return true;
+        }
+        else
+        {
+            timer_delay_ms(5);
+        }
+        timenow = timer_get_ticks();
+        if (1000 * (timenow - timestart) > timeout)
+            break;
+    }
+    return false;
 }
