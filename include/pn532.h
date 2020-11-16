@@ -23,7 +23,7 @@ typedef unsigned int size_t;
  * ---------------------
  * Initializes spi interface and resets PN532 module.
  */
-void pn532_init();
+void pn532_init(unsigned int reset_pin, unsigned int nss_pin);
 
 /**
  * @fn pn532_reset

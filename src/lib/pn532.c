@@ -30,7 +30,7 @@ void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
     pn532_wakeup();
 }
 
-void pn532_reset()
+void pn532_reset(void)
 {
     gpio_write(_RESET_PIN, 1);
     timer_delay_ms(100);
@@ -52,7 +52,7 @@ char reverse_byte(char byte)
     return result;
 }
 
-void pn532_wakeup()
+void pn532_wakeup(void)
 {
     // Send any special commands/data to wake up PN532
     unsigned char data[] = {0x00};

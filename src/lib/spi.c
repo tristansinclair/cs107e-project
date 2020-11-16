@@ -49,10 +49,13 @@ void spi_transfer(unsigned char *tx, unsigned char *rx, unsigned len)
 
     for (int i = 0; i < len; i++)
     {
-        while (!(spi->cs & SPI0_TX_CAN_ACCEPT));
+        while (!(spi->cs & SPI0_TX_CAN_ACCEPT))
+            ;
         spi->fifo = tx[i];
-        while (!(spi->cs & SPI0_TRANSFER_DONE));
-        while (!(spi->cs & SPI0_RX_HAS_DATA));
+        while (!(spi->cs & SPI0_TRANSFER_DONE))
+            ;
+        while (!(spi->cs & SPI0_RX_HAS_DATA))
+            ;
         rx[i] = (unsigned char)spi->fifo;
     }
 
