@@ -12,7 +12,7 @@
 #include <printf.h>
 
 const unsigned int RESET_PIN = GPIO_PIN20;
-const unsigned int NSS_PIN = GPIO_PIN21;
+const unsigned int NSS_PIN = GPIO_PIN4;
 
 void test_spi_transfer()
 {
