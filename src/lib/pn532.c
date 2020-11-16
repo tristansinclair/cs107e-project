@@ -18,8 +18,8 @@
 #define _SPI_READY (0x01)
 #define _SPI_CHANNEL (0)
 
-const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
-const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
+// const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
+// const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
 static unsigned int _RESET_PIN, _NSS_PIN;
 
 void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
