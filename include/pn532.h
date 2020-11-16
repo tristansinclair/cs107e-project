@@ -137,4 +137,11 @@ int pn532_write_frame(byte_t *data, size_t bufsize);
  */
 int pn532_read_frame(byte_t *data, size_t bufsize);
 
+/**
+ * @fn pn532_send_command
+ * ---------------------
+ * Sends command to pn532 and writes response into .
+ */
+int pn532_send_commmad(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t param_length, unsigned int timeout);
+
 #endif // _PN532_H
