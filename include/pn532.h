@@ -44,13 +44,13 @@ void pn532_wakeup();
  * ---------------------
  * Sends read signal to pn532 and writes response into data buffer.
  */
-void pn532_read_data(char *data, size_t bufsize);
+void pn532_read_data(unsigned char *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
  * Writes data data to spi module.
  */
-void pn532_write_data(char *data, size_t bufsize);
+void pn532_write_data(unsigned char *data, size_t bufsize);
 
 #endif // _PN532_H

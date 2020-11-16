@@ -1,5 +1,5 @@
 # Modules for project
-MY_MODULES = pn532.o nfc.o
+MY_MODULES = pn532.o nfc.o spi.o
 
 # Paths to binaries.
 APPLICATION = build/bin/nfc_app.bin

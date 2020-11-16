@@ -7,8 +7,12 @@
 #include <pn532.h>
 #include <gpio.h>
 #include <timer.h>
+#include <stdint.h>
+#include <spi.h>
 
 static unsigned int _RESET_PIN, _NSS_PIN;
+#define HIGH 1
+#define LOW 0
 
 void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
 {
@@ -28,50 +32,12 @@ void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
 
 void pn532_reset()
 {
-    digitalWrite(_RESET_PIN, 1);
+    gpio_write(_RESET_PIN, 1);
     timer_delay_ms(100);
-    digitalWrite(_RESET_PIN, 0);
+    gpio_write(_RESET_PIN, 0);
     timer_delay_ms(500);
-    digitalWrite(_RESET_PIN, 1);
+    gpio_write(_RESET_PIN, 1);
     timer_delay_ms(100);
-}
-
-void pn532_wakeup()
-{
-    // Send any special commands/data to wake up PN532
-    char data[] = {0x00};
-    char rx[1];
-    timer_delay_ms(1000);
-    digitalWrite(_NSS_PIN, 0);
-    timer_delay_ms(2); // T_osc_start
-    spi_transfer(data, rx, 1);
-    timer_delay_ms(1000);
-}
-
-void pn532_read_data(char *data, size_t bufsize)
-{
-    // char frame[bufsize + 1];
-    // frame[0] = _SPI_DATAREAD;
-    // // delay
-    // spi_transfer(frame, frame, bufsize + 1);
-    // memcpy(data, frame, bufsize);
-    char frame[bufsize];
-    frame[0] = _SPI_DATAREAD;
-    spi_transfer(frame, data, bufsize);
-}
-
-void pn532_write_data(char *data, size_t bufsize)
-{
-    // char frame[bufsize + 1];
-    // frame[0] = _SPI_DATAWRITE;
-    // memcpy(frame + 1, data, bufsize);
-    // rpi_spi_rw(frame, bufsize + 1);
-    // spi_transfer(frame, frame, bufsize + 1);
-    char frame[bufsize + 1];
-    frame[0] = _SPI_DATAWRITE;
-    memcpy(frame + 1, data, bufsize);
-    rpi_spi_rw(frame, bufsize + 1);
-    spi_transfer(data, frame, bufsize + 1);
 }
 
 char reverse_byte(char byte)
@@ -84,4 +50,63 @@ char reverse_byte(char byte)
         byte >>= 1;
     }
     return result;
+}
+
+void pn532_wakeup()
+{
+    // Send any special commands/data to wake up PN532
+    unsigned char data[] = {0x00};
+    unsigned char rx[1];
+    timer_delay_ms(1000);
+    gpio_write(_NSS_PIN, 0);
+    timer_delay_ms(2); // T_osc_start
+    spi_transfer(data, rx, 1);
+    timer_delay_ms(1000);
+}
+
+// void rpi_spi_rw(uint8_t *data, uint8_t count)
+// {
+//     gpio_write(_NSS_PIN, LOW);
+//     timer_delay(1);
+// #ifndef _SPI_HARDWARE_LSB
+//     for (uint8_t i = 0; i < count; i++)
+//     {
+//         data[i] = reverse_byte(data[i]);
+//     }
+//     wiringPiSPIDataRW(_SPI_CHANNEL, data, count);
+//     for (uint8_t i = 0; i < count; i++)
+//     {
+//         data[i] = reverse_byte(data[i]);
+//     }
+// #else
+//     wiringPiSPIDataRW(_SPI_CHANNEL, data, count);
+// #endif
+//     timer_delay(1);
+//     gpio_write(_NSS_PIN, HIGH);
+// }
+
+void pn532_read_data(unsigned char *data, size_t bufsize)
+{
+    // char frame[bufsize + 1];
+    // frame[0] = _SPI_DATAREAD;
+    // // timer_delay
+    // spi_transfer(frame, frame, bufsize + 1);
+    // memcpy(data, frame, bufsize);
+    unsigned char frame[bufsize];
+    frame[0] = _SPI_DATAREAD;
+    spi_transfer(frame, data, bufsize);
+}
+
+void pn532_write_data(unsigned char *data, size_t bufsize)
+{
+    // char frame[bufsize + 1];
+    // frame[0] = _SPI_DATAWRITE;
+    // memcpy(frame + 1, data, bufsize);
+    // rpi_spi_rw(frame, bufsize + 1);
+    // spi_transfer(frame, frame, bufsize + 1);
+    unsigned char frame[bufsize + 1];
+    frame[0] = _SPI_DATAWRITE;
+    memcpy(frame + 1, data, bufsize);
+    //rpi_spi_rw(frame, bufsize + 1);
+    spi_transfer(data, frame, bufsize + 1);
 }
