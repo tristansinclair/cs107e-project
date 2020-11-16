@@ -16,8 +16,21 @@ const unsigned int NSS_PIN = GPIO_PIN21;
 
 void test_spi_transfer()
 {
-    char *frame[20];
-    memcpy(frame, 0, 20);
+    byte_t frame[7] = {0x00, 0x00, 0xff, 0x02, 0xe0, 0x2a, 0x00};
+    pn532_write_data(frame, 7);
+
+    byte_t read_data[262];
+    memset(read_data, 0, 262);
+    pn532_read_data(read_data, 262);
+
+    printf("\n{");
+    for (int i = 0; i < 262; i++)
+    {
+        printf("%x, ", read_data[i]);
+        if (i % 10 == 0)
+            printf("\n");
+    }
+    printf("}\n");
 }
 
 void basic_tests(void)

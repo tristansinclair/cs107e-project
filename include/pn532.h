@@ -15,6 +15,7 @@
 
 // Constants
 typedef unsigned int size_t;
+typedef unsigned char byte_t;
 #define _SPI_STATREAD (0x02)
 #define _SPI_DATAWRITE (0x01)
 #define _SPI_DATAREAD (0x03)
@@ -47,20 +48,20 @@ void pn532_wakeup();
  * ---------------------
  * Transmits data to peripheral and overwrites data with received bytes.
  */
-void rpi_spi_rw(char *data, size_t bufsize);
+void rpi_spi_rw(byte_t *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
  * Sends read signal to pn532 and writes response into data buffer.
  */
-void pn532_read_data(char *data, size_t bufsize);
+void pn532_read_data(byte_t *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
  * Writes data data to spi module.
  */
-void pn532_write_data(char *data, size_t bufsize);
+void pn532_write_data(byte_t *data, size_t bufsize);
 
 #endif // _PN532_H

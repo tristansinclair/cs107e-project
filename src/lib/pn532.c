@@ -51,7 +51,7 @@ char reverse_byte(char byte)
 void pn532_wakeup()
 {
     // Send any special commands/data to wake up PN532
-    char data[] = {0x00};
+    byte_t data[] = {0x00};
     timer_delay_ms(1000);
     gpio_write(_NSS_PIN, 0);
     timer_delay_ms(2); // T_osc_start
@@ -59,7 +59,7 @@ void pn532_wakeup()
     timer_delay_ms(1000);
 }
 
-void rpi_spi_rw(char *data, size_t bufsize)
+void rpi_spi_rw(byte_t *data, size_t bufsize)
 {
     gpio_write(_NSS_PIN, LOW);
     timer_delay_ms(1);
@@ -75,36 +75,31 @@ void rpi_spi_rw(char *data, size_t bufsize)
     //     }
     // #else
     // #endif
-    unsigned char rx[bufsize];
-    spi_transfer((unsigned char *)data, rx, bufsize);
+    byte_t rx[bufsize];
+    spi_transfer(data, rx, bufsize);
     memcpy(data, rx, bufsize);
 
     timer_delay_ms(1);
     gpio_write(_NSS_PIN, HIGH);
 }
 
-void pn532_read_data(char *data, size_t bufsize)
+void pn532_read_data(byte_t *data, size_t bufsize)
 {
-    // char frame[bufsize + 1];
-    // frame[0] = _SPI_DATAREAD;
-    // // timer_delay_ms
-    // rpi_spi_rw(frame, frame, bufsize + 1);
-    // memcpy(data, frame, bufsize);
-    // unsigned char frame[bufsize];
-    // frame[0] = _SPI_DATAREAD;
-    // rpi_spi_rw(frame, bufsize);
+    byte_t frame[bufsize + 1];
+    memcpy(frame, 0, bufsize + 1);
+    frame[0] = _SPI_DATAREAD;
+
+    timer_delay_ms(5);
+    rpi_spi_rw(frame, bufsize + 1);
+    memcpy(data, frame + 1, bufsize);
 }
 
-void pn532_write_data(char *data, size_t bufsize)
+void pn532_write_data(byte_t *data, size_t bufsize)
 {
-    // char frame[bufsize + 1];
-    // frame[0] = _SPI_DATAWRITE;
-    // memcpy(frame + 1, data, bufsize);
-    // rpi_spi_rw(frame, bufsize + 1);
-    // rpi_spi_rw(frame, frame, bufsize + 1);
-    // char frame[bufsize + 1];
-    // frame[0] = _SPI_DATAWRITE;
-    // memcpy(frame + 1, data, bufsize);
-    //rpi_spi_rw(frame, bufsize + 1);
-    // rpi_spi_rw(data, frame, bufsize + 1);
+    byte_t frame[bufsize + 1];
+    memcpy(frame, 0, bufsize + 1);
+    frame[0] = _SPI_DATAWRITE;
+
+    memcpy(frame + 1, data, bufsize);
+    rpi_spi_rw(frame, bufsize + 1);
 }
