@@ -12,44 +12,62 @@
 #include "printf.h"
 #include "pn532.h"
 
-unsigned int reset_pin = GPIO_PIN20;
-unsigned int nss_pin = GPIO_PIN21;
+const unsigned int RESET_PIN = GPIO_PIN20;
+const unsigned int NSS_PIN = GPIO_PIN4;
+
+byte_t reverse_bit(byte_t num)
+{
+    byte_t result = 0;
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        result <<= 1;
+        result += (num & 1);
+        num >>= 1;
+    }
+    return result;
+}
 
 int GetFirmwareVersion(void)
 {
-    // length of version: 4
-    if (PN532_CallFunction(pn532, PN532_COMMAND_GETFIRMWAREVERSION,
-                           version, 4, NULL, 0, 500) == PN532_STATUS_ERROR)
+    byte_t frame[7] = {0x00, 0x00, 0xff, 0x02, 0xe0, 0x2a, 0x00};
+    printf("\n{");
+
+    for (int i = 0; i < 7; i++)
     {
-        pn532->log("Failed to detect the PN532");
-        return PN532_STATUS_ERROR;
+        frame[i] = reverse_bit(frame[i]);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        printf("%x, ", frame[i]);
+        if (i % 10 == 0)
+            printf("\n");
+    }
+
+    gpio_write(NSS_PIN, 0);
+    spi_transfer(frame, frame, 7);
+    gpio_write(NSS_PIN, 1);
+
+    // byte_t read_data[262];
+    // memset(read_data, 0, 262);
+    // pn532_read_data(read_data, 262);
+
+    printf("\n{");
+    for (int i = 0; i < 7; i++)
+    {
+        printf("%x, ", frame[i]);
+        if (i % 10 == 0)
+            printf("\n");
     }
     return PN532_STATUS_OK;
 }
 
 void basic_tests(void)
 {
-    printf("NFC Firmware Testing\n");
-
-    uint8_t buff[255];
-    buff[0] = 0xD4;
-    buff[1] = command & 0xFF;
-
-    pn532_reset();
-    pn532_wakeup();
-    spi_transfer();
-
-    // if (PN532_WriteFrame(pn532, buff, params_length + 2) != PN532_STATUS_OK)
-    // {
-    //     pn532->wakeup();
-    //     pn532->log("Trying to wakeup");
-    //     return PN532_STATUS_ERROR;
-    // }
-
-    if (PN532_GetFirmwareVersion(&pn532, buff) == PN532_STATUS_OK)
-    {
-        printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
-    }
+    // printf("\n----------------------------------------\n");
+    // printf("|           NFC Basic Testing          |\n");
+    // printf("|   CONSOLE SIZE: 40 x 40 (in chars)   |\n");
+    // printf("----------------------------------------\n");
 }
 
 void main(void)
