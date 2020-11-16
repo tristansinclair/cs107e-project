@@ -8,6 +8,11 @@
 
 #include "pn532.h"
 
-void nfc_init();
+/**
+ * @fn nfc_init
+ * ---------------------
+ * Initializes nfc capabilities.
+ */
+void nfc_init(unsigned int reset_pin, unsigned int nss_pin);
 
 #endif // _NFC_H

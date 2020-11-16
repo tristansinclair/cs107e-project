@@ -9,6 +9,9 @@
 
 #include <spi.h>
 #include <strings.h>
+#include <gpio.h>
+#include <timer.h>
+#include <stdint.h>
 
 // Constants
 typedef unsigned int size_t;
@@ -23,7 +26,7 @@ typedef unsigned int size_t;
  * ---------------------
  * Initializes spi interface and resets PN532 module.
  */
-void pn532_init();
+void pn532_init(unsigned int reset_pin, unsigned int nss_pin);
 
 /**
  * @fn pn532_reset
@@ -40,17 +43,24 @@ void pn532_reset();
 void pn532_wakeup();
 
 /**
+ * @fn rpi_spi_rw
+ * ---------------------
+ * Transmits data to peripheral and overwrites data with received bytes.
+ */
+void rpi_spi_rw(char *data, size_t bufsize);
+
+/**
  * @fn pn532_read_data
  * ---------------------
  * Sends read signal to pn532 and writes response into data buffer.
  */
-void pn532_read_data(unsigned char *data, size_t bufsize);
+void pn532_read_data(char *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
  * Writes data data to spi module.
  */
-void pn532_write_data(unsigned char *data, size_t bufsize);
+void pn532_write_data(char *data, size_t bufsize);
 
 #endif // _PN532_H
