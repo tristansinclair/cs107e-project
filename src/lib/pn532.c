@@ -249,10 +249,6 @@ int pn532_send_command(byte_t command, byte_t *response, size_t response_length,
     byte_t buf[PN532_FRAME_MAX_LENGTH];
     buf[0] = PN532_HOSTTOPN532;
     buf[1] = command & 0xFF;
-    // for (int i = 0; i < params_length; i++)
-    // {
-    //     buf[2 + i] = params[i];
-    // }
     memcpy(buf + 2, params, params_length);
 
     // Send frame and wait for response.
