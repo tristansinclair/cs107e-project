@@ -143,13 +143,14 @@ int pn532_read_frame(byte_t *data, size_t bufsize);
  * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
  * Sends command to pn532 and writes response into response.
  */
-int pn532_send_commmad(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t param_length, unsigned int timeout);
+int pn532_send_commmad(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
 
 /**
  * @fn pn532_get_firmware
  * ---------------------
- * Requests pn532 firmware version. Version is 4 bytes but only uses bytes 1 and 2 not 0 and 3.
+ * @param version is 4 bytes but only uses bytes 1 and 2 not 0 and 3.
+ * Requests pn532 firmware version and fills version. 
  */
-int pn532_get_firmware(byte_t *version);
+int pn532_get_firmware_version(byte_t *version);
 
 #endif // _PN532_H

@@ -14,9 +14,6 @@
 const unsigned int RESET_PIN = GPIO_PIN20;
 const unsigned int NSS_PIN = GPIO_PIN4;
 
-const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
-const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
-
 void print_message(byte_t *buf, size_t bufsize)
 {
     printf("\n{");
@@ -48,57 +45,64 @@ void test_spi_transfer()
     printf("}\n");
 }
 
-void test2()
+// void test2()
+// {
+//     byte_t response[4];
+
+//     // Build frame data with command and parameters.
+//     byte_t buff[255];
+//     buff[0] = PN532_HOSTTOPN532;
+//     buff[1] = PN532_COMMAND_GETFIRMWAREVERSION & 0xFF;
+
+//     // Send frame and wait for response.
+//     // if (PN532_WriteFrame(pn532, buff, 2) != PN532_STATUS_OK)
+//     pn532_write_frame(buff, 2);
+
+//     if (!pn532_wait_ready(500))
+//     {
+//         // return PN532_STATUS_ERROR;
+//     }
+//     // Verify ACK response and wait to be ready for function response.
+//     pn532_read_data(buff, sizeof(PN532_ACK));
+//     for (int i = 0; i < sizeof(PN532_ACK); i++)
+//     {
+//         if (PN532_ACK[i] != buff[i])
+//         {
+//             // pn532->log("Did not receive expected ACK from PN532!");
+//             printf("no ACK");
+//             // return PN532_STATUS_ERROR;
+//         }
+//     }
+//     if (!pn532_wait_ready(500))
+//     {
+//         printf("bad status");
+//         // return PN532_STATUS_ERROR;
+//     }
+//     // Read response bytes.
+//     int frame_len = pn532_read_frame(buff, 4 + 2);
+
+//     // Check that response is for the called function.
+//     if (!((buff[0] == PN532_PN532TOHOST) && (buff[1] == (PN532_COMMAND_GETFIRMWAREVERSION + 1))))
+//     {
+//         // pn532->log("Received unexpected command response!");
+//         // return PN532_STATUS_ERROR;
+//     }
+//     // Return response data.
+//     for (int i = 0; i < 4; i++)
+//     {
+//         response[i] = buff[i + 2];
+//     }
+//     // The the number of bytes read
+//     printf("%d", frame_len - 2);
+
+//     print_message(response, 4);
+// }
+
+void test3()
 {
-    byte_t response[4];
-
-    // Build frame data with command and parameters.
-    byte_t buff[255];
-    buff[0] = PN532_HOSTTOPN532;
-    buff[1] = PN532_COMMAND_GETFIRMWAREVERSION & 0xFF;
-
-    // Send frame and wait for response.
-    // if (PN532_WriteFrame(pn532, buff, 2) != PN532_STATUS_OK)
-    pn532_write_frame(buff, 2);
-
-    if (!pn532_wait_ready(500))
-    {
-        // return PN532_STATUS_ERROR;
-    }
-    // Verify ACK response and wait to be ready for function response.
-    pn532_read_data(buff, sizeof(PN532_ACK));
-    for (int i = 0; i < sizeof(PN532_ACK); i++)
-    {
-        if (PN532_ACK[i] != buff[i])
-        {
-            // pn532->log("Did not receive expected ACK from PN532!");
-            printf("no ACK");
-            // return PN532_STATUS_ERROR;
-        }
-    }
-    if (!pn532_wait_ready(500))
-    {
-        printf("bad status");
-        // return PN532_STATUS_ERROR;
-    }
-    // Read response bytes.
-    int frame_len = pn532_read_frame(buff, 4 + 2);
-
-    // Check that response is for the called function.
-    if (!((buff[0] == PN532_PN532TOHOST) && (buff[1] == (PN532_COMMAND_GETFIRMWAREVERSION + 1))))
-    {
-        // pn532->log("Received unexpected command response!");
-        // return PN532_STATUS_ERROR;
-    }
-    // Return response data.
-    for (int i = 0; i < 4; i++)
-    {
-        response[i] = buff[i + 2];
-    }
-    // The the number of bytes read
-    printf("%d", frame_len - 2);
-
-    print_message(response, 4);
+    byte_t buf[4];
+    pn532_get_firmware_version(buf);
+    print_message(buf, 4);
 }
 
 void basic_tests(void)
@@ -113,6 +117,7 @@ void main(void)
 {
     pn532_init(RESET_PIN, NSS_PIN);
     // test_spi_transfer();
-    test2();
+    // test2();
+    test3();
     uart_putchar(EOT);
 }

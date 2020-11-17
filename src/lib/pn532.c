@@ -18,8 +18,8 @@
 #define _SPI_READY (0x01)
 #define _SPI_CHANNEL (0)
 
-// const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
-// const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
+const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
+const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
 static unsigned int _RESET_PIN, _NSS_PIN;
 
 void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
@@ -241,4 +241,70 @@ bool pn532_wait_ready(unsigned int timeout)
             break;
     }
     return false;
+}
+
+int pn532_send_commmad(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
+{
+    // Build frame data with command and parameters.
+    byte_t buf[PN532_FRAME_MAX_LENGTH];
+    buf[0] = PN532_HOSTTOPN532;
+    buf[1] = command & 0xFF;
+    // for (int i = 0; i < params_length; i++)
+    // {
+    //     buf[2 + i] = params[i];
+    // }
+    memcpy(buf + 2, params, params_length);
+
+    // Send frame and wait for response.
+    if (pn532_write_frame(buf, params_length + 2) != PN532_STATUS_OK)
+    {
+        pn532_wakeup();
+        // pn532->log("Trying to wakeup");
+        printf("Trying to wakeup");
+        return PN532_STATUS_ERROR;
+    }
+
+    // Grab status bytes
+    if (!pn532_wait_ready(timeout))
+        return PN532_STATUS_ERROR;
+
+    // Verify ACK response and wait to be ready for function response.
+    pn532_read_data(buf, sizeof(PN532_ACK));
+    for (int i = 0; i < sizeof(PN532_ACK); i++)
+    {
+        if (PN532_ACK[i] != buf[i])
+        {
+            // pn532->log("Did not receive expected ACK from PN532!");
+            printf("Did not receive expected ACK from PN532!");
+            return PN532_STATUS_ERROR;
+        }
+    }
+    if (!pn532_wait_ready(timeout))
+    {
+        return PN532_STATUS_ERROR;
+    }
+
+    // Read response bytes.
+    int frame_len = pn532_read_frame(buf, response_length + 2);
+
+    // Check that response is for the called function.
+    if (!((buf[0] == PN532_PN532TOHOST) && (buf[1] == (command + 1))))
+    {
+        // pn532->log("Received unexpected command response!");
+        printf("Received unexpected command response!");
+        return PN532_STATUS_ERROR;
+    }
+
+    // Return response data.
+    for (int i = 0; i < response_length; i++)
+    {
+        response[i] = buf[i + 2];
+    }
+    // The the number of bytes read
+    return frame_len - 2;
+}
+
+int pn532_get_firmware_version(byte_t *version)
+{
+    return pn532_send_commmad(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
 }
