@@ -308,3 +308,126 @@ int pn532_get_firmware_version(byte_t *version)
 {
     return pn532_send_commmand(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
 }
+
+
+// it looks like the example modules only use SAM normal mode
+    // for abstraction, we make our own pn532_set_configuration function, and then a
+    // "pn532_set_normal_configuration" function within that
+
+/**
+  * @brief: Configure the PN532 to read MiFare cards using normal mode
+  */
+
+int PN532_SamConfiguration(PN532* pn532) {
+    // Send SAM configuration command with configuration for:
+    // - 0x01, normal mode
+    // - 0x14, timeout 50ms * 20 = 1 second
+    // - 0x01, use IRQ pin
+    // Note that no other verification is necessary as call_function will
+    // check the command was executed as expected.
+    uint8_t params[] = {0x01, 0x14, 0x01};
+    PN532_CallFunction(pn532, PN532_COMMAND_SAMCONFIGURATION,
+                       NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+    return PN532_STATUS_OK;
+}
+
+
+
+
+
+/**
+  * @brief: Wait for a MiFare card to be available and return its UID when found.
+  *     Will wait up to timeout seconds and return None if no card is found,
+  *     otherwise a bytearray with the UID of the found card is returned.
+  * @retval: Length of UID, or -1 if error.
+  */
+
+/*int PN532_ReadPassiveTarget(
+    PN532* pn532,
+    uint8_t* response,
+    uint8_t card_baud,
+    uint32_t timeout
+) {
+    // Send passive read command for 1 card.  Expect at most a 7 byte UUID.
+    uint8_t params[] = {0x01, card_baud};
+    uint8_t buff[19];
+    int length = PN532_CallFunction(pn532, PN532_COMMAND_INLISTPASSIVETARGET,
+                        buff, sizeof(buff), params, sizeof(params), timeout);
+    if (length < 0) {
+        return PN532_STATUS_ERROR; // No card found
+    }
+    // Check only 1 card with up to a 7 byte UID is present.
+    if (buff[0] != 0x01) {
+        pn532->log("More than one card detected!");
+        return PN532_STATUS_ERROR;
+    }
+    if (buff[5] > 7) {
+        pn532->log("Found card with unexpectedly long UID!");
+        return PN532_STATUS_ERROR;
+    }
+    for (uint8_t i = 0; i < buff[5]; i++) {
+        response[i] = buff[6 + i];
+    }
+    return buff[5];
+}*/
+
+
+
+//--------- NFC TAG DUMP ------------
+
+/*void tag_dump() {
+
+    uint8_t buff[255];
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint32_t pn532_error = PN532_ERROR_NONE;
+    int32_t uid_len = 0;
+    printf("Hello!\r\n");
+    PN532 pn532;
+    //PN532_SPI_Init(&pn532);
+    PN532_I2C_Init(&pn532);
+    //PN532_UART_Init(&pn532);
+    if (PN532_GetFirmwareVersion(&pn532, buff) == PN532_STATUS_OK) {
+        printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
+    } else {
+        return -1;
+    }
+    PN532_SamConfiguration(&pn532);
+    printf("Waiting for RFID/NFC card...\r\n");
+    while (1)
+    {
+        // Check if a card is available to read
+        uid_len = PN532_ReadPassiveTarget(&pn532, uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR) {
+            printf(".");
+        } else {
+            printf("Found card with UID: ");
+            for (uint8_t i = 0; i < uid_len; i++) {
+                printf("%02x ", uid[i]);
+            }
+            printf("\r\n");
+            break;
+        }
+    }
+    printf("Reading blocks...\r\n");
+    for (uint8_t block_number = 0; block_number < 64; block_number++) {
+        pn532_error = PN532_MifareClassicAuthenticateBlock(&pn532, uid, uid_len,
+                block_number, MIFARE_CMD_AUTH_A, key_a);
+        if (pn532_error != PN532_ERROR_NONE) {
+            break;
+        }
+        pn532_error = PN532_MifareClassicReadBlock(&pn532, buff, block_number);
+        if (pn532_error != PN532_ERROR_NONE) {
+            break;
+        }
+        printf("%d: ", block_number);
+        for (uint8_t i = 0; i < 16; i++) {
+            printf("%02x ", buff[i]);
+        }
+        printf("\r\n");
+    }
+    if (pn532_error) {
+        printf("Error: 0x%02x\r\n", pn532_error);
+    }
+
+}*/
