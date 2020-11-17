@@ -375,8 +375,7 @@ int PN532_SamConfiguration(PN532* pn532) {
 
 //--------- NFC TAG DUMP ------------
 
-/*void tag_dump() {
-
+void tag_dump() {
     uint8_t buff[255];
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -384,10 +383,9 @@ int PN532_SamConfiguration(PN532* pn532) {
     int32_t uid_len = 0;
     printf("Hello!\r\n");
     PN532 pn532;
-    //PN532_SPI_Init(&pn532);
-    PN532_I2C_Init(&pn532);
-    //PN532_UART_Init(&pn532);
-    if (PN532_GetFirmwareVersion(&pn532, buff) == PN532_STATUS_OK) {
+    PN532_SPI_Init(&pn532);
+
+    if (pn532_get_firmware_version(buff) == PN532_STATUS_OK) {
         printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
     } else {
         return -1;
@@ -430,4 +428,4 @@ int PN532_SamConfiguration(PN532* pn532) {
         printf("Error: 0x%02x\r\n", pn532_error);
     }
 
-}*/
+}
