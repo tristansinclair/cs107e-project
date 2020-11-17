@@ -243,7 +243,7 @@ bool pn532_wait_ready(unsigned int timeout)
     return false;
 }
 
-int pn532_send_commmand(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
+int pn532_send_command(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
 {
     // Build frame data with command and parameters.
     byte_t buf[PN532_FRAME_MAX_LENGTH];

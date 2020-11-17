@@ -10,21 +10,10 @@
 #include <pn532.h>
 #include <timer.h>
 #include <printf.h>
+#include <nfc.h>
 
 const unsigned int RESET_PIN = GPIO_PIN20;
 const unsigned int NSS_PIN = GPIO_PIN4;
-
-void print_message(byte_t *buf, size_t bufsize)
-{
-    printf("\n{");
-    for (int i = 0; i < bufsize; i++)
-    {
-        printf("%x, ", buf[i]);
-        if (i % 10 == 0 && i != 0)
-            printf("\n");
-    }
-    printf("}\n");
-}
 
 void test_spi_transfer()
 {
@@ -102,7 +91,7 @@ void test3()
 {
     byte_t buf[4];
     pn532_get_firmware_version(buf);
-    print_message(buf, 4);
+    print_bytes(buf, 4);
 }
 
 void basic_tests(void)
