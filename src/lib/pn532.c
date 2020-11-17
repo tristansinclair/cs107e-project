@@ -306,7 +306,7 @@ int pn532_send_command(byte_t command, byte_t *response, size_t response_length,
 
 int pn532_get_firmware_version(byte_t *version)
 {
-    return pn532_send_commmand(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
+    return pn532_send_command(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
 }
 
 
@@ -395,7 +395,7 @@ void tag_dump() {
     while (1)
     {
         // Check if a card is available to read
-        uid_len = PN532_ReadPassiveTarget(&pn532, uid, PN532_MIFARE_ISO14443A, 1000);
+        uid_len = pn532_send_command(&pn532, uid, PN532_MIFARE_ISO14443A, 1000);
         if (uid_len == PN532_STATUS_ERROR) {
             printf(".");
         } else {
