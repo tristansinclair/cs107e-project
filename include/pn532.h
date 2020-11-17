@@ -143,7 +143,7 @@ int pn532_read_frame(byte_t *data, size_t bufsize);
  * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
  * Sends command to pn532 and writes response into response.
  */
-int pn532_send_commmad(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
+int pn532_send_commmand(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
 
 /**
  * @fn pn532_get_firmware
