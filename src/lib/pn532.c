@@ -418,11 +418,12 @@ int pn532_readBlock(uint8_t* response, uint16_t block_number) {
     uint8_t buff[MIFARE_BLOCK_LENGTH + 1];
     // Send InDataExchange request to read block of MiFare data.
     pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, buff, sizeof(buff),
-                       params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+                       params, sizeof(params), PN532_DEFAULT_TIMEOUT) ; 
+                       
     // Check first response is 0x00 to show success.
-    if (buff[0] != PN532_ERROR_NONE) {
-        return buff[0];
-    }
+    // if (buff[0] != PN532_ERROR_NONE) {
+    //     return buff[0];
+    // }
     for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++) {
         response[i] = buff[i + 1];
     }
@@ -448,7 +449,7 @@ void run_check_config() { //helper fxn to run SamConfig and print conditions for
 }
 
 
-int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
+/* int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
 
     int32_t uid_len = 0; //length of UID returned
     uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT

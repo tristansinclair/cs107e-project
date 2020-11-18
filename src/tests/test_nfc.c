@@ -68,7 +68,7 @@ void test_SamConfig() { //make sure we can configure the HAT
 
 
 
-void test_getCardUID(int32_t* uid_len, uint8_t* uid[MIFARE_UID_MAX_LENGTH]) { //make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
+void test_getCardUID(int32_t* uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH]) { //make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
     // int32_t uid_len = 0; //length of UID returned
     // uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
     if(pn532_SamConfig() == PN532_STATUS_OK) {
@@ -83,13 +83,13 @@ void test_getCardUID(int32_t* uid_len, uint8_t* uid[MIFARE_UID_MAX_LENGTH]) { //
     while (1)
     {
         // Check if a card is available to read
-        *uid_len = pn532_ReadPassiveTarget(*uid, PN532_MIFARE_ISO14443A, 1000);
+        *uid_len = pn532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
         if (*uid_len == PN532_STATUS_ERROR) {
             printf(".");
         } else {
             printf("Found card with UID: ");
             for (uint8_t i = 0; i < *uid_len; i++) {
-                printf("%02x ", (*uid)[i]);
+                printf("%02x ", uid[i]);
             }
             printf("\r\n");
             break;
@@ -98,21 +98,20 @@ void test_getCardUID(int32_t* uid_len, uint8_t* uid[MIFARE_UID_MAX_LENGTH]) { //
 }
 
 
-
 void test_getBlockInfo() { //print the data for a block of the tag
     int32_t uid_len = 0; //length of UID returned
     uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
-    test_getCardUID(&uid_len, &uid); //fill in the UID
+    test_getCardUID(&uid_len, uid); //fill in the UID
+
 
 
     uint8_t buff[255];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; //store the default passcode for the tag blocks
-    uint32_t pn532_error = PN532_ERROR_NONE;
-
+    unsigned int pn532_error = PN532_ERROR_NONE;
 
     printf("Reading blocks...\r\n");
     for (uint8_t block_number = 0; block_number < 64; block_number++) {
-        pn532_error = pn532_AuthenticateBlock(uid, uid_len,
+        pn532_error = pn532_authenticateBlock(uid, uid_len,
                 block_number, MIFARE_CMD_AUTH_A, key_a);
         if (pn532_error != PN532_ERROR_NONE) {
             break;

@@ -77,14 +77,14 @@
 
 // Mifare Commands
 #define MIFARE_CMD_AUTH_A                   (0x60)
-/*#define MIFARE_CMD_AUTH_B                   (0x61)
+#define MIFARE_CMD_AUTH_B                   (0x61)
 #define MIFARE_CMD_READ                     (0x30)
 #define MIFARE_CMD_WRITE                    (0xA0)
 #define MIFARE_CMD_TRANSFER                 (0xB0)
 #define MIFARE_CMD_DECREMENT                (0xC0)
 #define MIFARE_CMD_INCREMENT                (0xC1)
 #define MIFARE_CMD_STORE                    (0xC2)
-#define MIFARE_ULTRALIGHT_CMD_WRITE         (0xA2)*/
+#define MIFARE_ULTRALIGHT_CMD_WRITE         (0xA2)
 
 #define MIFARE_UID_MAX_LENGTH               MIFARE_UID_TRIPLE_LENGTH
 #define MIFARE_UID_SINGLE_LENGTH            (4)
@@ -95,7 +95,7 @@
 
 
 /* Official PN532 Errors Definitions */
-#define PN532_ERROR_NONE     
+#define PN532_ERROR_NONE                   (0x00)
 
 // Other Error Definitions
 #define PN532_STATUS_ERROR (-1)
@@ -208,6 +208,7 @@ int pn532_ReadPassiveTarget(
 );
 
 
+
 /**
   * @brief: Authenticate a specified block number for a MiFare classic card.
   * @param uid: A byte array with the UID of the card.
@@ -234,7 +235,7 @@ int pn532_authenticateBlock(
   * @param block_number: specify a block to read.
   * @retval: PN532 error code.
   */
-int pn532_readBlock(uint8_t* response, uint16_t block_number) {
+int pn532_readBlock(uint8_t* response, uint16_t block_number);
 
 
 
