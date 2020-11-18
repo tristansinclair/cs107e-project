@@ -12,6 +12,10 @@
 #include <printf.h>
 #include <nfc.h>
 
+
+#include <stdint.h> //use standard integer library
+
+
 const unsigned int RESET_PIN = GPIO_PIN20;
 const unsigned int NSS_PIN = GPIO_PIN4;
 
@@ -34,60 +38,7 @@ void test_spi_transfer()
     printf("}\n");
 }
 
-// void test2()
-// {
-//     byte_t response[4];
-
-//     // Build frame data with command and parameters.
-//     byte_t buff[255];
-//     buff[0] = PN532_HOSTTOPN532;
-//     buff[1] = PN532_COMMAND_GETFIRMWAREVERSION & 0xFF;
-
-//     // Send frame and wait for response.
-//     // if (PN532_WriteFrame(pn532, buff, 2) != PN532_STATUS_OK)
-//     pn532_write_frame(buff, 2);
-
-//     if (!pn532_wait_ready(500))
-//     {
-//         // return PN532_STATUS_ERROR;
-//     }
-//     // Verify ACK response and wait to be ready for function response.
-//     pn532_read_data(buff, sizeof(PN532_ACK));
-//     for (int i = 0; i < sizeof(PN532_ACK); i++)
-//     {
-//         if (PN532_ACK[i] != buff[i])
-//         {
-//             // pn532->log("Did not receive expected ACK from PN532!");
-//             printf("no ACK");
-//             // return PN532_STATUS_ERROR;
-//         }
-//     }
-//     if (!pn532_wait_ready(500))
-//     {
-//         printf("bad status");
-//         // return PN532_STATUS_ERROR;
-//     }
-//     // Read response bytes.
-//     int frame_len = pn532_read_frame(buff, 4 + 2);
-
-//     // Check that response is for the called function.
-//     if (!((buff[0] == PN532_PN532TOHOST) && (buff[1] == (PN532_COMMAND_GETFIRMWAREVERSION + 1))))
-//     {
-//         // pn532->log("Received unexpected command response!");
-//         // return PN532_STATUS_ERROR;
-//     }
-//     // Return response data.
-//     for (int i = 0; i < 4; i++)
-//     {
-//         response[i] = buff[i + 2];
-//     }
-//     // The the number of bytes read
-//     printf("%d", frame_len - 2);
-
-//     print_message(response, 4);
-// }
-
-void test3()
+void test_firmwareVersion()
 {
     byte_t buf[4];
     pn532_get_firmware_version(buf);
@@ -102,13 +53,55 @@ void basic_tests(void)
     printf("----------------------------------------\n");
 }
 
-void test_SamConfig() {
-    if (PN532_GetFirmwareVersion(&pn532, buff) == PN532_STATUS_OK) {
+void test_SamConfig() { //make sure we can configure the HAT
+    byte_t buff[4];
+    if (pn532_get_firmware_version(buff) == PN532_STATUS_OK) {
         printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
     } else {
-        return -1;
+        printf("failed to find firmware version");
+        return;
     }
-    pn532_SamConfig();
+    if(pn532_SamConfig() == PN532_STATUS_OK) {
+        printf("SamConfig successefully executed. HAT should now be in normal mode.");
+    };
+}
+
+
+
+
+
+
+void test_getCardUID() { //make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
+    
+    int32_t uid_len = 0; //length of UID returned
+    uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
+
+    
+    if(pn532_SamConfig() == PN532_STATUS_OK) {
+        printf("SamConfig successefully executed. HAT should now be in normal mode.");
+    }
+    else {
+        printf("Couldn't configure HAT");
+        return;
+    }
+    
+    printf("Waiting for RFID/NFC card...\r\n");
+
+    while (1)
+    {
+        // Check if a card is available to read
+        uid_len = pn532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR) {
+            printf(".");
+        } else {
+            printf("Found card with UID: ");
+            for (uint8_t i = 0; i < uid_len; i++) {
+                printf("%02x ", uid[i]);
+            }
+            printf("\r\n");
+            break;
+        }
+    } 
 }
 
 
@@ -117,6 +110,12 @@ void main(void)
     pn532_init(RESET_PIN, NSS_PIN);
     // test_spi_transfer();
     // test2();
-    test3();
+    // test_firmwareVersion();
+
+
+    //----------VX Tests----------
+    // test_SamConfig();
+    test_getCardUID();
+
     uart_putchar(EOT);
 }

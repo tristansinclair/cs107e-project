@@ -6,6 +6,10 @@
 
 #include <pn532.h>
 
+
+#include <stdint.h> //use standard integer library
+
+
 #define HIGH 1
 #define LOW 0
 #define PN532_FRAME_MAX_LENGTH 255
@@ -243,7 +247,11 @@ bool pn532_wait_ready(unsigned int timeout)
     return false;
 }
 
-int pn532_send_command(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
+
+
+// Send a command over SPI; this mimics the function of 'PN532_CallFunction' from the Waveshare 'pn532.c'
+// Returns number of bytes received back from the HAT, or PN532_STATUS_ERROR if something went wrong
+int pn532_send_command_receive_response(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
 {
     // Build frame data with command and parameters.
     byte_t buf[PN532_FRAME_MAX_LENGTH];
@@ -306,13 +314,12 @@ int pn532_send_command(byte_t command, byte_t *response, size_t response_length,
 
 int pn532_get_firmware_version(byte_t *version)
 {
-    return pn532_send_command(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
+    if(pn532_send_command_receive_response(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500) == PN532_STATUS_ERROR) {
+        printf("pn532_get_firmware_version failed to detect the PN532");
+        return PN532_STATUS_ERROR;
+    }
+    return PN532_STATUS_OK;
 }
-
-
-// it looks like the example modules only use SAM normal mode
-    // for abstraction, we make our own pn532_set_configuration function, and then a
-    // "pn532_set_normal_configuration" function within that
 
 
 
@@ -331,7 +338,7 @@ int pn532_SamConfig() {
     // Note that no other verification is necessary as call_function will
     // check the command was executed as expected.
     uint8_t params[] = {0x01, 0x14, 0x01};
-    pn532_send_command(PN532_COMMAND_SAMCONFIGURATION,
+    pn532_send_command_receive_response(PN532_COMMAND_SAMCONFIGURATION,
                        NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
     return PN532_STATUS_OK;
 }
@@ -344,8 +351,7 @@ int pn532_SamConfig() {
   * @retval: Length of UID, or -1 if error.
   */
 
-/*int PN532_ReadPassiveTarget(
-    PN532* pn532,
+int pn532_ReadPassiveTarget(
     uint8_t* response,
     uint8_t card_baud,
     uint32_t timeout
@@ -353,25 +359,27 @@ int pn532_SamConfig() {
     // Send passive read command for 1 card.  Expect at most a 7 byte UUID.
     uint8_t params[] = {0x01, card_baud};
     uint8_t buff[19];
-    int length = PN532_CallFunction(pn532, PN532_COMMAND_INLISTPASSIVETARGET,
+    int length = pn532_send_command_receive_response(PN532_COMMAND_INLISTPASSIVETARGET,
                         buff, sizeof(buff), params, sizeof(params), timeout);
+
     if (length < 0) {
         return PN532_STATUS_ERROR; // No card found
     }
     // Check only 1 card with up to a 7 byte UID is present.
     if (buff[0] != 0x01) {
-        pn532->log("More than one card detected!");
+        printf("Response byte: %d\n", buff[0]); // ASK KAI
+        printf("More than one card detected!");
         return PN532_STATUS_ERROR;
     }
     if (buff[5] > 7) {
-        pn532->log("Found card with unexpectedly long UID!");
+        printf("Found card with unexpectedly long UID!");
         return PN532_STATUS_ERROR;
     }
     for (uint8_t i = 0; i < buff[5]; i++) {
         response[i] = buff[6 + i];
     }
     return buff[5];
-}*/
+}
 
 
 
