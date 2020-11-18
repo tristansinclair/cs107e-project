@@ -43,7 +43,7 @@ int pn532_read_passive_target(uint8_t *response, uint8_t card_baud, size_t timeo
  * @returns: true if the block was authenticated, or false if not authenticated.
  * @retval: PN532 error code.
  */
-int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_number, uint16_t key_number, uint8_t *key);
+int pn532_authenticate_block(uint8_t *uid, size_t uid_length, size_t block_number, size_t key_number, uint8_t *key);
 
 /**
  * @fn pn532_read_block
@@ -53,6 +53,6 @@ int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_nu
  * @param block_number: specify a block to read.
  * @returns: PN532 error code.
  */
-int pn532_read_block(uint8_t *response, uint16_t block_number);
+int pn532_read_block(uint8_t *response, size_t block_number);
 
 #endif // _NFC_H
