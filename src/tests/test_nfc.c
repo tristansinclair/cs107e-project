@@ -11,8 +11,7 @@
 #include <timer.h>
 #include <printf.h>
 #include <nfc.h>
-
-#include <stdint.h> //use standard integer library
+#include <stdint.h>
 
 const unsigned int RESET_PIN = GPIO_PIN20;
 const unsigned int NSS_PIN = GPIO_PIN4;
@@ -87,17 +86,17 @@ void test_SamConfig()
         printf("failed to find firmware version");
         return;
     }
-    if (pn532_SamConfig() == PN532_STATUS_OK)
+    if (pn532_config_normal() == PN532_STATUS_OK)
     {
         printf("SamConfig successefully executed. HAT should now be in normal mode.");
     };
 }
 
-void test_getCardUID(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
+void test_get_card_uid(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
 { //make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
     // int32_t uid_len = 0; //length of UID returned
     // uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
-    if (pn532_SamConfig() == PN532_STATUS_OK)
+    if (pn532_config_normal() == PN532_STATUS_OK)
     {
         printf("SamConfig successefully executed. HAT should now be in normal mode.");
     }
@@ -111,7 +110,7 @@ void test_getCardUID(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
     while (1)
     {
         // Check if a card is available to read
-        *uid_len = pn532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
+        *uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
         if (*uid_len == PN532_STATUS_ERROR)
         {
             printf(".");
@@ -129,11 +128,11 @@ void test_getCardUID(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
     }
 }
 
-void test_getBlockInfo()
+void test_get_block_info()
 {                                       //print the data for a block of the tag
     int32_t uid_len = 0;                //length of UID returned
     uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
-    test_getCardUID(&uid_len, uid);     //fill in the UID
+    test_get_card_uid(&uid_len, uid);   //fill in the UID
 
     uint8_t buff[255];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; //store the default passcode for the tag blocks
@@ -142,13 +141,12 @@ void test_getBlockInfo()
     printf("Reading blocks...\r\n");
     for (uint8_t block_number = 0; block_number < 64; block_number++)
     {
-        pn532_error = pn532_authenticateBlock(uid, uid_len,
-                                              block_number, MIFARE_CMD_AUTH_A, key_a);
+        pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
         if (pn532_error != PN532_ERROR_NONE)
         {
             break;
         }
-        pn532_error = pn532_readBlock(buff, block_number);
+        pn532_error = pn532_read_block(buff, block_number);
         if (pn532_error != PN532_ERROR_NONE)
         {
             break;
@@ -176,7 +174,7 @@ void main(void)
     //----------VX Tests----------
     // test_SamConfig();
     // test_getCardUID();
-    test_getBlockInfo();
+    test_get_block_info();
 
     uart_putchar(EOT);
 }

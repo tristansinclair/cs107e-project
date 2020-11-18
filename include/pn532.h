@@ -13,15 +13,10 @@
 #include <timer.h>
 #include <stdbool.h>
 #include <printf.h>
+#include <stdint.h>
 
-#include <stdint.h> //use standard integer library
-
-// SPI Constants
-#define _SPI_STATREAD (0x02)
-#define _SPI_DATAWRITE (0x01)
-#define _SPI_DATAREAD (0x03)
-#define _SPI_READY (0x01)
-#define _SPI_CHANNEL (0)
+#define PN532_FRAME_MAX_LENGTH 255
+#define PN532_DEFAULT_TIMEOUT 1000
 
 // Communication bytes
 #define PN532_PREAMBLE (0x00)
@@ -94,133 +89,108 @@
 
 // Constants
 typedef unsigned int size_t;
-typedef unsigned char byte_t;
 
 /**
  * @fn pn532_init
  * ---------------------
- * Initializes spi interface and resets PN532 module.
+ * @description:Initializes spi interface and resets PN532 module.
  */
 void pn532_init(unsigned int reset_pin, unsigned int nss_pin);
 
 /**
  * @fn pn532_reset
  * ---------------------
- * Resets pn532 module.
+ * @description: Resets pn532 module.
  */
 void pn532_reset();
 
 /**
  * @fn pn532_wakeup
  * ---------------------
- * Wakes pn532 module.
+ * @description: Wakes pn532 module.
  */
 void pn532_wakeup();
 
 /**
  * @fn rpi_spi_rw
  * ---------------------
- * Transmits data to peripheral and overwrites data with received bytes.
+ * @description: Transmits data to peripheral and overwrites data with received bytes.
  */
-void rpi_spi_rw(byte_t *data, size_t bufsize);
+void rpi_spi_rw(uint8_t *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
- * Sends read signal to pn532 and writes response into data buffer.
+ * @description: Sends read signal to pn532 and writes response into data buffer.
  */
-void pn532_read_data(byte_t *data, size_t bufsize);
+void pn532_read_data(uint8_t *data, size_t bufsize);
 
 /**
  * @fn pn532_read_data
  * ---------------------
- * Writes data data to spi module.
+ * @description: Writes data data to spi module.
  */
-void pn532_write_data(byte_t *data, size_t bufsize);
+void pn532_write_data(uint8_t *data, size_t bufsize);
 
 /**
  * @fn pn532_wait_ready
  * ---------------------
- * 
+ * @returns true if this function reads a SPI ready response from pn532 in timeout time
  */
 bool pn532_wait_ready(unsigned int timeout);
 
 /**
  * @fn pn532_write_frame
  * ---------------------
+ * @description: Structures message to send across spi by adding certain communication bytes.
  * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
- * Structures message to send across spi by adding certain communication bytes.
  */
-int pn532_write_frame(byte_t *data, size_t bufsize);
+int pn532_write_frame(uint8_t *data, size_t bufsize);
 
 /**
  * @fn pn532_write_frame
  * ---------------------
+ * @description: Reads response frame of at most bufsize bytes.
  * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
- * Reads response frame of at most bufsize bytes.
  */
-int pn532_read_frame(byte_t *data, size_t bufsize);
+int pn532_read_frame(uint8_t *data, size_t bufsize);
 
 /**
- * @fn pn532_send_command
+ * @fn pn532_send_receive
  * ---------------------
- * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
- * Sends command to pn532 and writes response into response.
+ * @description: Sends command to pn532 and writes response into response.
+ * @returns number of bytes received back from the HAT, or PN532_STATUS_ERROR if something went wrong
  */
-int pn532_send_receive(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
+int pn532_send_receive(uint8_t command, uint8_t *response, size_t response_length, uint8_t *params, size_t params_length, unsigned int timeout);
 
 /**
  * @fn pn532_get_firmware
  * ---------------------
+ * @description: Requests pn532 firmware version and fills version. 
  * @param version is 4 bytes but only uses bytes 1 and 2 not 0 and 3.
- * Requests pn532 firmware version and fills version. 
  */
-int pn532_get_firmware_version(byte_t *version);
+int pn532_get_firmware_version(uint8_t *version);
 
-//-------------- CALL FUNCTIONS START --------------
+/* -------------------------------------------------------------------------- */
+/*                                COMMAND FUNCTIONS START                                */
+/* -------------------------------------------------------------------------- */
 
-/** @description: configure the SAM to normal mode 
- *  @retval: returns PN532_STATUS_OK after completing 
+/** 
+ * @fn pn532_config_normal
+ * ---------------------
+ * @description: Configures the SAM to normal mode. 
+ * @returns PN532_STATUS_OK after completing 
  */
-int pn532_SamConfig();
+int pn532_config_normal();
 
 /**
-  * @brief: Wait for a MiFare card to be available and return its UID when found.
-  *     Will wait up to timeout seconds and return None if no card is found,
-  *     otherwise a bytearray with the UID of the found card is returned.
-  * @retval: Length of UID, or -1 if error.
-  */
-int pn532_ReadPassiveTarget(
-    uint8_t *response,
-    uint8_t card_baud,
-    uint32_t timeout);
+ * @fn pn532_sam_config
+ * ---------------------
+ * @description: Configures SAM to mode based on params.
+ * @returns PN532_STATUS_OK after completing 
+ */
+int pn532_sam_config(uint8_t mode, uint8_t timeout, uint8_t use_irq_pin);
 
-/**
-  * @brief: Authenticate a specified block number for a MiFare classic card.
-  * @param uid: A byte array with the UID of the card.
-  * @param uid_length: Length of the UID of the card.
-  * @param block_number: The block to authenticate.
-  * @param key_number: The key type (like MIFARE_CMD_AUTH_A or MIFARE_CMD_AUTH_B).
-  * @param key: A byte array with the key data.
-  * @retval: true if the block was authenticated, or false if not authenticated.
-  * @retval: PN532 error code.
-  */
-int pn532_authenticateBlock(
-    uint8_t *uid,
-    uint8_t uid_length,
-    uint16_t block_number,
-    uint16_t key_number,
-    uint8_t *key);
-
-/**
-  * @brief: Read a block of data from the card. Block number should be the block
-  *     to read.
-  * @param response: buffer of length 16 returned if the block is successfully read.
-  * @param block_number: specify a block to read.
-  * @retval: PN532 error code.
-  */
-int pn532_readBlock(uint8_t *response, uint16_t block_number);
-
-int tag_dataDump();
+int tag_data_dump();
 
 #endif // _PN532_H
