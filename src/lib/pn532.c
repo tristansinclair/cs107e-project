@@ -1,5 +1,5 @@
 /**
- *  @file pn532.c
+ * @file pn532.c
  * ---------------------
  * @brief Implements pn532.h
  */
@@ -7,7 +7,6 @@
 #include <pn532.h>
 
 #include <stdint.h> //use standard integer library
-
 
 #define HIGH 1
 #define LOW 0
@@ -24,7 +23,6 @@
 const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
 const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
 static unsigned int _RESET_PIN, _NSS_PIN;
-
 
 //-------------SUPPORTING FUNCTIONS START----------------
 
@@ -149,9 +147,6 @@ bool pn532_wait_ready(unsigned int timeout)
 }
 
 //-------------SUPPORTING FUNCTIONS END------------------
-
-
-
 
 //-------------FRAME WRITING FUNCTIONS START ------------
 
@@ -317,20 +312,20 @@ int pn532_send_receive(byte_t command, byte_t *response, size_t response_length,
 
 //-------------FRAME WRITING FUNCTIONS END------------
 
-
-
 //-------------CALL FUNCTIONS START------------
 
 int pn532_get_firmware_version(byte_t *version)
 {
-    if(pn532_send_receive(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500) == PN532_STATUS_ERROR) {
+    if (pn532_send_receive(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500) == PN532_STATUS_ERROR)
+    {
         printf("pn532_get_firmware_version failed to detect the PN532");
         return PN532_STATUS_ERROR;
     }
     return PN532_STATUS_OK;
 }
 
-int pn532_SamConfig() { //Configure the PN532 to read MiFare cards using normal mode
+int pn532_SamConfig()
+{ //Configure the PN532 to read MiFare cards using normal mode
     // Send SAM configuration command with configuration for:
     // - 0x01, normal mode
     // - 0x14, timeout 50ms * 20 = 1 second
@@ -343,51 +338,47 @@ int pn532_SamConfig() { //Configure the PN532 to read MiFare cards using normal 
     return PN532_STATUS_OK;
 }
 
-
 int pn532_ReadPassiveTarget( //Wait for a MiFare card to be available and return its UID when found.
-    uint8_t* response,
+    uint8_t *response,
     uint8_t card_baud,
-    uint32_t timeout
-) {
+    uint32_t timeout)
+{
     // Send passive read command for 1 card.  Expect at most a 7 byte UUID.
     uint8_t params[] = {0x01, card_baud};
     uint8_t buff[19];
     int length = pn532_send_receive(PN532_COMMAND_INLISTPASSIVETARGET,
-                        buff, sizeof(buff), params, sizeof(params), timeout);
+                                    buff, sizeof(buff), params, sizeof(params), timeout);
 
-    if (length < 0) {
+    if (length < 0)
+    {
         return PN532_STATUS_ERROR; // No card found
     }
     // Check only 1 card with up to a 7 byte UID is present.
-    if (buff[0] != 0x01) {
+    if (buff[0] != 0x01)
+    {
         printf("Response byte: %d\n", buff[0]); // ASK KAI
         printf("More than one card detected!");
         return PN532_STATUS_ERROR;
     }
-    if (buff[5] > 7) {
+    if (buff[5] > 7)
+    {
         printf("Found card with unexpectedly long UID!");
         return PN532_STATUS_ERROR;
     }
-    for (uint8_t i = 0; i < buff[5]; i++) {
+    for (uint8_t i = 0; i < buff[5]; i++)
+    {
         response[i] = buff[6 + i];
     }
     return buff[5];
 }
 
-
-
-
-
-
-
-
 int pn532_authenticateBlock( //Unlock a tag memory block
-    uint8_t* uid,
+    uint8_t *uid,
     uint8_t uid_length,
     uint16_t block_number,
     uint16_t key_number,
-    uint8_t* key
-) {
+    uint8_t *key)
+{
     // Build parameters for InDataExchange command to authenticate MiFare card.
     uint8_t response[1] = {0xFF};
     uint8_t params[3 + MIFARE_UID_MAX_LENGTH + MIFARE_KEY_LENGTH];
@@ -395,11 +386,13 @@ int pn532_authenticateBlock( //Unlock a tag memory block
     params[1] = key_number & 0xFF;
     params[2] = block_number & 0xFF;
     // params[3:3+keylen] = key
-    for (uint8_t i = 0; i < MIFARE_KEY_LENGTH; i++) {
+    for (uint8_t i = 0; i < MIFARE_KEY_LENGTH; i++)
+    {
         params[3 + i] = key[i];
     }
     // params[3+keylen:] = uid
-    for (uint8_t i = 0; i < uid_length; i++) {
+    for (uint8_t i = 0; i < uid_length; i++)
+    {
         params[3 + MIFARE_KEY_LENGTH + i] = uid[i];
     }
     // Send InDataExchange request
@@ -408,42 +401,42 @@ int pn532_authenticateBlock( //Unlock a tag memory block
     return response[0];
 }
 
-
-int pn532_readBlock(uint8_t* response, uint16_t block_number) {
+int pn532_readBlock(uint8_t *response, uint16_t block_number)
+{
     uint8_t params[] = {0x01, MIFARE_CMD_READ, block_number & 0xFF};
     uint8_t buff[MIFARE_BLOCK_LENGTH + 1];
     // Send InDataExchange request to read block of MiFare data.
     pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, buff, sizeof(buff),
-                       params, sizeof(params), PN532_DEFAULT_TIMEOUT) ; 
-                       
+                       params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+
     // Check first response is 0x00 to show success.
-    if (buff[0] != PN532_ERROR_NONE) {
+    if (buff[0] != PN532_ERROR_NONE)
+    {
         return buff[0];
     }
-    for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++) {
+    for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++)
+    {
         response[i] = buff[i + 1];
     }
     return buff[0];
 }
 
-
-
 //-------------CALL FUNCTIONS END------------
-
-
 
 //--------------VX SUPPORTING-----------------
 
-void run_check_config() { //helper fxn to run SamConfig and print conditions for mode configuration
-    if(pn532_SamConfig() == PN532_STATUS_OK) {
+void run_check_config()
+{ //helper fxn to run SamConfig and print conditions for mode configuration
+    if (pn532_SamConfig() == PN532_STATUS_OK)
+    {
         printf("SamConfig successfully executed. HAT is now in normal mode.");
     }
-    else {
+    else
+    {
         printf("Couldn't configure HAT");
         return;
     }
 }
-
 
 /* int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
 

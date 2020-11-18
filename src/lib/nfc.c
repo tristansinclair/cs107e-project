@@ -1,5 +1,5 @@
 /**
- *  @file nfc.c
+ * @file nfc.c
  * ---------------------
  * @brief Implements nfc.h
  */

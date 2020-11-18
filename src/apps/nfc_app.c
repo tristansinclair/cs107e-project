@@ -1,5 +1,5 @@
 /**
- *  @file nfc_app.c
+ * @file nfc_app.c
  * ---------------------
  * @brief Demo application for displaying nfc capabilities.
  */
