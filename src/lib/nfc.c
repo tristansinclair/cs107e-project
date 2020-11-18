@@ -73,6 +73,7 @@ int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_nu
     params[0] = 0x01;
     params[1] = key_number & 0xFF;
     params[2] = block_number & 0xFF;
+
     // params[3:3+keylen] = key
     for (uint8_t i = 0; i < MIFARE_KEY_LENGTH; i++)
     {
@@ -83,9 +84,9 @@ int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_nu
     {
         params[3 + MIFARE_KEY_LENGTH + i] = uid[i];
     }
+
     // Send InDataExchange request
-    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response),
-                       params, 3 + MIFARE_KEY_LENGTH + uid_length, PN532_DEFAULT_TIMEOUT);
+    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response), params, 3 + MIFARE_KEY_LENGTH + uid_length, PN532_DEFAULT_TIMEOUT);
     return response[0];
 }
 

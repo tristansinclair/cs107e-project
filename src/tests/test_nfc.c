@@ -74,7 +74,7 @@ void test_get_card_uid(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
     while (1)
     {
         // Check if a card is available to read
-        *uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        *uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
         if (*uid_len == PN532_STATUS_ERROR)
         {
             printf(".");
@@ -111,8 +111,6 @@ void test_get_block_info(void)
     for (uint8_t block_number = 0; block_number < 64; block_number++)
     {
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
-        pn532_error = pn532_authenticate_block(uid, uid_len,
-                                               block_number, MIFARE_CMD_AUTH_A, key_a);
         if (pn532_error != PN532_ERROR_NONE)
         {
             break;
@@ -175,8 +173,8 @@ void main(void)
     // test_firmwareVersion();
 
     //----------VX Tests----------
-    // test_SamConfig();
-    // test_getCardUID();
+    test_sam_config();
+    // test_get_card_uid();
     test_get_block_info();
 
     test_firmware_version(); // request and print firmware version
@@ -186,5 +184,5 @@ void main(void)
     // test_get_card_uid();
     // test_get_block_info();
 
-    // uart_putchar(EOT);
+    uart_putchar(EOT);
 }

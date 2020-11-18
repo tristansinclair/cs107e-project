@@ -8,6 +8,24 @@
 
 #include "pn532.h"
 
+// Mifare Commands
+#define MIFARE_CMD_AUTH_A (0x60)
+#define MIFARE_CMD_AUTH_B (0x61)
+#define MIFARE_CMD_READ (0x30)
+#define MIFARE_CMD_WRITE (0xA0)
+#define MIFARE_CMD_TRANSFER (0xB0)
+#define MIFARE_CMD_DECREMENT (0xC0)
+#define MIFARE_CMD_INCREMENT (0xC1)
+#define MIFARE_CMD_STORE (0xC2)
+#define MIFARE_ULTRALIGHT_CMD_WRITE (0xA2)
+
+#define MIFARE_UID_MAX_LENGTH MIFARE_UID_TRIPLE_LENGTH
+#define MIFARE_UID_SINGLE_LENGTH (4)
+#define MIFARE_UID_DOUBLE_LENGTH (7)
+#define MIFARE_UID_TRIPLE_LENGTH (10)
+#define MIFARE_KEY_LENGTH (6)
+#define MIFARE_BLOCK_LENGTH (16)
+
 /**
  * @fn nfc_init
  * ---------------------
