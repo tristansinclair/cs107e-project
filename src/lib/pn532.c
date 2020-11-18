@@ -381,18 +381,11 @@ int pn532_ReadPassiveTarget( //Wait for a MiFare card to be available and return
 
 
 
-/**
-  * @brief: Authenticate specified block number for a MiFare classic card.
-  * @param uid: A byte array with the UID of the card.
-  * @param uid_length: Length of the UID of the card.
-  * @param block_number: The block to authenticate.
-  * @param key_number: The key type (like MIFARE_CMD_AUTH_A or MIFARE_CMD_AUTH_B).
-  * @param key: A byte array with the key data.
-  * @retval: true if the block was authenticated, or false if not authenticated.
-  * @retval: PN532 error code.
-  */
-int PN532_MifareClassicAuthenticateBlock(
-    PN532* pn532,
+
+
+
+
+int pn532_authenticateBlock( //Unlock a tag memory block
     uint8_t* uid,
     uint8_t uid_length,
     uint16_t block_number,
@@ -414,9 +407,26 @@ int PN532_MifareClassicAuthenticateBlock(
         params[3 + MIFARE_KEY_LENGTH + i] = uid[i];
     }
     // Send InDataExchange request
-    PN532_CallFunction(pn532, PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response),
+    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response),
                        params, 3 + MIFARE_KEY_LENGTH + uid_length, PN532_DEFAULT_TIMEOUT);
     return response[0];
+}
+
+
+int pn532_readBlock(uint8_t* response, uint16_t block_number) {
+    uint8_t params[] = {0x01, MIFARE_CMD_READ, block_number & 0xFF};
+    uint8_t buff[MIFARE_BLOCK_LENGTH + 1];
+    // Send InDataExchange request to read block of MiFare data.
+    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, buff, sizeof(buff),
+                       params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+    // Check first response is 0x00 to show success.
+    if (buff[0] != PN532_ERROR_NONE) {
+        return buff[0];
+    }
+    for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++) {
+        response[i] = buff[i + 1];
+    }
+    return buff[0];
 }
 
 

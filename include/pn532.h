@@ -76,8 +76,8 @@
 #define PN532_MIFARE_ISO14443A              (0x00)
 
 // Mifare Commands
-/*#define MIFARE_CMD_AUTH_A                   (0x60)
-#define MIFARE_CMD_AUTH_B                   (0x61)
+#define MIFARE_CMD_AUTH_A                   (0x60)
+/*#define MIFARE_CMD_AUTH_B                   (0x61)
 #define MIFARE_CMD_READ                     (0x30)
 #define MIFARE_CMD_WRITE                    (0xA0)
 #define MIFARE_CMD_TRANSFER                 (0xB0)
@@ -92,6 +92,10 @@
 #define MIFARE_UID_TRIPLE_LENGTH            (10)
 #define MIFARE_KEY_LENGTH                   (6)
 #define MIFARE_BLOCK_LENGTH                 (16)
+
+
+/* Official PN532 Errors Definitions */
+#define PN532_ERROR_NONE     
 
 // Other Error Definitions
 #define PN532_STATUS_ERROR (-1)
@@ -214,14 +218,24 @@ int pn532_ReadPassiveTarget(
   * @retval: true if the block was authenticated, or false if not authenticated.
   * @retval: PN532 error code.
   */
-int PN532_MifareClassicAuthenticateBlock(
-    PN532* pn532,
+int pn532_authenticateBlock(
     uint8_t* uid,
     uint8_t uid_length,
     uint16_t block_number,
     uint16_t key_number,
     uint8_t* key
 );
+
+
+/**
+  * @brief: Read a block of data from the card. Block number should be the block
+  *     to read.
+  * @param response: buffer of length 16 returned if the block is successfully read.
+  * @param block_number: specify a block to read.
+  * @retval: PN532 error code.
+  */
+int pn532_readBlock(uint8_t* response, uint16_t block_number) {
+
 
 
 int tag_dataDump();
