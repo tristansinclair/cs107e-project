@@ -68,15 +68,11 @@ void test_SamConfig() { //make sure we can configure the HAT
 
 
 
-
-
-
 void test_getCardUID() { //make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
     
     int32_t uid_len = 0; //length of UID returned
     uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
 
-    
     if(pn532_SamConfig() == PN532_STATUS_OK) {
         printf("SamConfig successefully executed. HAT should now be in normal mode.");
     }
@@ -103,6 +99,9 @@ void test_getCardUID() { //make sure a MiFare card UID can be obtained using pn5
         }
     } 
 }
+
+
+
 
 
 void main(void)

@@ -172,7 +172,7 @@ int pn532_read_frame(byte_t *data, size_t bufsize);
  * @returns PN532_STATUS_ERROR if failed and PN532_STATUS_OK if suceeded
  * Sends command to pn532 and writes response into response.
  */
-int pn532_send_command_receive_response(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
+int pn532_send_receive(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout);
 
 /**
  * @fn pn532_get_firmware
@@ -184,14 +184,47 @@ int pn532_get_firmware_version(byte_t *version);
 
 
 
-// configure the SAM to normal mode 
-// TODO: comment this out so that the HAT can only be configured from inside pn532.c
+//-------------- CALL FUNCTIONS START --------------
+
+/** @description: configure the SAM to normal mode 
+ *  @retval: returns PN532_STATUS_OK after completing 
+ */
 int pn532_SamConfig();
+
+/**
+  * @brief: Wait for a MiFare card to be available and return its UID when found.
+  *     Will wait up to timeout seconds and return None if no card is found,
+  *     otherwise a bytearray with the UID of the found card is returned.
+  * @retval: Length of UID, or -1 if error.
+  */
 int pn532_ReadPassiveTarget(
     uint8_t* response,
     uint8_t card_baud,
     uint32_t timeout
 );
+
+
+/**
+  * @brief: Authenticate a specified block number for a MiFare classic card.
+  * @param uid: A byte array with the UID of the card.
+  * @param uid_length: Length of the UID of the card.
+  * @param block_number: The block to authenticate.
+  * @param key_number: The key type (like MIFARE_CMD_AUTH_A or MIFARE_CMD_AUTH_B).
+  * @param key: A byte array with the key data.
+  * @retval: true if the block was authenticated, or false if not authenticated.
+  * @retval: PN532 error code.
+  */
+int PN532_MifareClassicAuthenticateBlock(
+    PN532* pn532,
+    uint8_t* uid,
+    uint8_t uid_length,
+    uint16_t block_number,
+    uint16_t key_number,
+    uint8_t* key
+);
+
+
+int tag_dataDump();
 
 
 #endif // _PN532_H

@@ -6,7 +6,6 @@
 
 #include <pn532.h>
 
-
 #include <stdint.h> //use standard integer library
 
 
@@ -26,7 +25,10 @@ const byte_t PN532_ACK[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
 const byte_t PN532_FRAME_START[] = {0x00, 0x00, 0xFF};
 static unsigned int _RESET_PIN, _NSS_PIN;
 
-void pn532_init(unsigned int reset_pin, unsigned int nss_pin)
+
+//-------------SUPPORTING FUNCTIONS START----------------
+
+void pn532_init(unsigned int reset_pin, unsigned int nss_pin) //initialize the HAT to send/receive over SPI
 {
     // Initialize pins 7-11 for spi
     spi_init(SPI_CE0, 1);
@@ -120,6 +122,38 @@ void pn532_write_data(byte_t *data, size_t bufsize)
     // Write frame
     rpi_spi_rw(frame, bufsize + 1);
 }
+
+bool pn532_wait_ready(unsigned int timeout)
+{
+    byte_t status[] = {_SPI_STATREAD, 0x00};
+
+    unsigned int timestart = timer_get_ticks();
+    unsigned int timenow;
+    while (1)
+    {
+        timer_delay_ms(10);
+        rpi_spi_rw(status, sizeof(status));
+        if (status[1] == _SPI_READY)
+        {
+            return true;
+        }
+        else
+        {
+            timer_delay_ms(5);
+        }
+        timenow = timer_get_ticks();
+        if (1000 * (timenow - timestart) > timeout)
+            break;
+    }
+    return false;
+}
+
+//-------------SUPPORTING FUNCTIONS END------------------
+
+
+
+
+//-------------FRAME WRITING FUNCTIONS START ------------
 
 int pn532_write_frame(byte_t *data, size_t bufsize)
 {
@@ -222,36 +256,9 @@ int pn532_read_frame(byte_t *response, size_t bufsize)
     return frame_len;
 }
 
-bool pn532_wait_ready(unsigned int timeout)
-{
-    byte_t status[] = {_SPI_STATREAD, 0x00};
-
-    unsigned int timestart = timer_get_ticks();
-    unsigned int timenow;
-    while (1)
-    {
-        timer_delay_ms(10);
-        rpi_spi_rw(status, sizeof(status));
-        if (status[1] == _SPI_READY)
-        {
-            return true;
-        }
-        else
-        {
-            timer_delay_ms(5);
-        }
-        timenow = timer_get_ticks();
-        if (1000 * (timenow - timestart) > timeout)
-            break;
-    }
-    return false;
-}
-
-
-
-// Send a command over SPI; this mimics the function of 'PN532_CallFunction' from the Waveshare 'pn532.c'
+// Send a command frame over SPI and receive the response; this mimics the function of 'PN532_CallFunction' from the Waveshare 'pn532.c'
 // Returns number of bytes received back from the HAT, or PN532_STATUS_ERROR if something went wrong
-int pn532_send_command_receive_response(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
+int pn532_send_receive(byte_t command, byte_t *response, size_t response_length, byte_t *params, size_t params_length, unsigned int timeout)
 {
     // Build frame data with command and parameters.
     byte_t buf[PN532_FRAME_MAX_LENGTH];
@@ -312,25 +319,22 @@ int pn532_send_command_receive_response(byte_t command, byte_t *response, size_t
     return frame_len - 2;
 }
 
+//-------------FRAME WRITING FUNCTIONS END------------
+
+
+
+//-------------CALL FUNCTIONS START------------
+
 int pn532_get_firmware_version(byte_t *version)
 {
-    if(pn532_send_command_receive_response(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500) == PN532_STATUS_ERROR) {
+    if(pn532_send_receive(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500) == PN532_STATUS_ERROR) {
         printf("pn532_get_firmware_version failed to detect the PN532");
         return PN532_STATUS_ERROR;
     }
     return PN532_STATUS_OK;
 }
 
-
-
-
-
-
-/**
-  * @brief: Configure the PN532 to read MiFare cards using normal mode
-  */
-
-int pn532_SamConfig() {
+int pn532_SamConfig() { //Configure the PN532 to read MiFare cards using normal mode
     // Send SAM configuration command with configuration for:
     // - 0x01, normal mode
     // - 0x14, timeout 50ms * 20 = 1 second
@@ -338,20 +342,13 @@ int pn532_SamConfig() {
     // Note that no other verification is necessary as call_function will
     // check the command was executed as expected.
     uint8_t params[] = {0x01, 0x14, 0x01};
-    pn532_send_command_receive_response(PN532_COMMAND_SAMCONFIGURATION,
+    pn532_send_receive(PN532_COMMAND_SAMCONFIGURATION,
                        NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
     return PN532_STATUS_OK;
 }
 
 
-/**
-  * @brief: Wait for a MiFare card to be available and return its UID when found.
-  *     Will wait up to timeout seconds and return None if no card is found,
-  *     otherwise a bytearray with the UID of the found card is returned.
-  * @retval: Length of UID, or -1 if error.
-  */
-
-int pn532_ReadPassiveTarget(
+int pn532_ReadPassiveTarget( //Wait for a MiFare card to be available and return its UID when found.
     uint8_t* response,
     uint8_t card_baud,
     uint32_t timeout
@@ -359,7 +356,7 @@ int pn532_ReadPassiveTarget(
     // Send passive read command for 1 card.  Expect at most a 7 byte UUID.
     uint8_t params[] = {0x01, card_baud};
     uint8_t buff[19];
-    int length = pn532_send_command_receive_response(PN532_COMMAND_INLISTPASSIVETARGET,
+    int length = pn532_send_receive(PN532_COMMAND_INLISTPASSIVETARGET,
                         buff, sizeof(buff), params, sizeof(params), timeout);
 
     if (length < 0) {
@@ -383,29 +380,76 @@ int pn532_ReadPassiveTarget(
 
 
 
-//--------- NFC TAG DUMP ----------------
 
-/*void tag_dump() {
-    uint8_t buff[255];
-    uint8_t uid[MIFARE_UID_MAX_LENGTH];
-    uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    uint32_t pn532_error = PN532_ERROR_NONE;
-    int32_t uid_len = 0;
-    printf("Hello!\r\n");
-    PN532 pn532;
-    PN532_SPI_Init(&pn532);
-
-    if (pn532_get_firmware_version(buff) == PN532_STATUS_OK) {
-        printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
-    } else {
-        return -1;
+/**
+  * @brief: Authenticate specified block number for a MiFare classic card.
+  * @param uid: A byte array with the UID of the card.
+  * @param uid_length: Length of the UID of the card.
+  * @param block_number: The block to authenticate.
+  * @param key_number: The key type (like MIFARE_CMD_AUTH_A or MIFARE_CMD_AUTH_B).
+  * @param key: A byte array with the key data.
+  * @retval: true if the block was authenticated, or false if not authenticated.
+  * @retval: PN532 error code.
+  */
+int PN532_MifareClassicAuthenticateBlock(
+    PN532* pn532,
+    uint8_t* uid,
+    uint8_t uid_length,
+    uint16_t block_number,
+    uint16_t key_number,
+    uint8_t* key
+) {
+    // Build parameters for InDataExchange command to authenticate MiFare card.
+    uint8_t response[1] = {0xFF};
+    uint8_t params[3 + MIFARE_UID_MAX_LENGTH + MIFARE_KEY_LENGTH];
+    params[0] = 0x01;
+    params[1] = key_number & 0xFF;
+    params[2] = block_number & 0xFF;
+    // params[3:3+keylen] = key
+    for (uint8_t i = 0; i < MIFARE_KEY_LENGTH; i++) {
+        params[3 + i] = key[i];
     }
-    PN532_SamConfiguration(&pn532);
+    // params[3+keylen:] = uid
+    for (uint8_t i = 0; i < uid_length; i++) {
+        params[3 + MIFARE_KEY_LENGTH + i] = uid[i];
+    }
+    // Send InDataExchange request
+    PN532_CallFunction(pn532, PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response),
+                       params, 3 + MIFARE_KEY_LENGTH + uid_length, PN532_DEFAULT_TIMEOUT);
+    return response[0];
+}
+
+
+
+//-------------CALL FUNCTIONS END------------
+
+
+
+//--------------VX SUPPORTING-----------------
+
+void run_check_config() { //helper fxn to run SamConfig and print conditions for mode configuration
+    if(pn532_SamConfig() == PN532_STATUS_OK) {
+        printf("SamConfig successfully executed. HAT is now in normal mode.");
+    }
+    else {
+        printf("Couldn't configure HAT");
+        return;
+    }
+}
+
+
+int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
+
+    int32_t uid_len = 0; //length of UID returned
+    uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
+
+    run_check_config();
     printf("Waiting for RFID/NFC card...\r\n");
+
     while (1)
     {
         // Check if a card is available to read
-        uid_len = pn532_send_command(&pn532, uid, PN532_MIFARE_ISO14443A, 1000);
+        uid_len = pn532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
         if (uid_len == PN532_STATUS_ERROR) {
             printf(".");
         } else {
@@ -416,7 +460,7 @@ int pn532_ReadPassiveTarget(
             printf("\r\n");
             break;
         }
-    }
+    } 
     printf("Reading blocks...\r\n");
     for (uint8_t block_number = 0; block_number < 64; block_number++) {
         pn532_error = PN532_MifareClassicAuthenticateBlock(&pn532, uid, uid_len,
