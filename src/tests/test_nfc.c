@@ -45,13 +45,37 @@ void test_firmwareVersion()
     print_bytes(buf, 4);
 }
 
-void basic_tests(void)
-{
-    printf("\n----------------------------------------\n");
-    printf("|           NFC Basic Testing          |\n");
-    printf("|   CONSOLE SIZE: 40 x 40 (in chars)   |\n");
-    printf("----------------------------------------\n");
-}
+// static void rpi_dump_mifare(void)
+// {
+//     byte_t buf[255];
+//     byte_t uid[MIFARE_UID_MAX_LENGTH];
+//     byte_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+//     unsigned int pn532_error = PN532_ERROR_NONE;
+//     int uid_len = 0;
+
+//     pn532_get_firmware_version(buf);
+//     print_bytes(buf, 4);
+//     printf("Found PN532 with firmware version: %d.%d\r\n", buf[1], buf[2]);
+
+//     PN532_SamConfiguration();
+//     printf("Waiting for RFID/NFC card...\r\n");
+
+//     while (1)
+//     {
+//         // Check if a card is available to read
+//         uid_len = PN532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
+//         if (uid_len == PN532_STATUS_ERROR) {
+//             printf(".");
+//         } else {
+//             printf("Found card with UID: ");
+//             for (uint8_t i = 0; i < uid_len; i++) {
+//                 printf("%02x ", uid[i]);
+//             }
+//             printf("\r\n");
+//             break;
+//         }
+//     }    
+// }
 
 void test_SamConfig() { //make sure we can configure the HAT
     byte_t buff[4];
