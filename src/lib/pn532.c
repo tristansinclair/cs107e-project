@@ -421,9 +421,9 @@ int pn532_readBlock(uint8_t* response, uint16_t block_number) {
                        params, sizeof(params), PN532_DEFAULT_TIMEOUT) ; 
                        
     // Check first response is 0x00 to show success.
-    // if (buff[0] != PN532_ERROR_NONE) {
-    //     return buff[0];
-    // }
+    if (buff[0] != PN532_ERROR_NONE) {
+        return buff[0];
+    }
     for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++) {
         response[i] = buff[i + 1];
     }
@@ -451,47 +451,6 @@ void run_check_config() { //helper fxn to run SamConfig and print conditions for
 
 /* int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
 
-    int32_t uid_len = 0; //length of UID returned
-    uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
-
-    run_check_config();
-    printf("Waiting for RFID/NFC card...\r\n");
-
-    while (1)
-    {
-        // Check if a card is available to read
-        uid_len = pn532_ReadPassiveTarget(uid, PN532_MIFARE_ISO14443A, 1000);
-        if (uid_len == PN532_STATUS_ERROR) {
-            printf(".");
-        } else {
-            printf("Found card with UID: ");
-            for (uint8_t i = 0; i < uid_len; i++) {
-                printf("%02x ", uid[i]);
-            }
-            printf("\r\n");
-            break;
-        }
-    } 
-    printf("Reading blocks...\r\n");
-    for (uint8_t block_number = 0; block_number < 64; block_number++) {
-        pn532_error = PN532_MifareClassicAuthenticateBlock(&pn532, uid, uid_len,
-                block_number, MIFARE_CMD_AUTH_A, key_a);
-        if (pn532_error != PN532_ERROR_NONE) {
-            break;
-        }
-        pn532_error = PN532_MifareClassicReadBlock(&pn532, buff, block_number);
-        if (pn532_error != PN532_ERROR_NONE) {
-            break;
-        }
-        printf("%d: ", block_number);
-        for (uint8_t i = 0; i < 16; i++) {
-            printf("%02x ", buff[i]);
-        }
-        printf("\r\n");
-    }
-    if (pn532_error) {
-        printf("Error: 0x%02x\r\n", pn532_error);
-    }
 
 }
 

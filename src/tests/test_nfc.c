@@ -103,8 +103,6 @@ void test_getBlockInfo() { //print the data for a block of the tag
     uint8_t uid[MIFARE_UID_MAX_LENGTH]; //holds the UID received from the HAT
     test_getCardUID(&uid_len, uid); //fill in the UID
 
-
-
     uint8_t buff[255];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; //store the default passcode for the tag blocks
     unsigned int pn532_error = PN532_ERROR_NONE;
