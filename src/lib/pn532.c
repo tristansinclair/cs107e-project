@@ -300,7 +300,7 @@ int pn532_send_command(byte_t command, byte_t *response, size_t response_length,
     {
         response[i] = buf[i + 2];
     }
-    // The the number of bytes read
+    // Then return the number of bytes read
     return frame_len - 2;
 }
 
@@ -314,11 +314,16 @@ int pn532_get_firmware_version(byte_t *version)
     // for abstraction, we make our own pn532_set_configuration function, and then a
     // "pn532_set_normal_configuration" function within that
 
+
+
+
+
+
 /**
   * @brief: Configure the PN532 to read MiFare cards using normal mode
   */
 
-int PN532_SamConfiguration(PN532* pn532) {
+int pn532_SamConfig() {
     // Send SAM configuration command with configuration for:
     // - 0x01, normal mode
     // - 0x14, timeout 50ms * 20 = 1 second
@@ -326,13 +331,10 @@ int PN532_SamConfiguration(PN532* pn532) {
     // Note that no other verification is necessary as call_function will
     // check the command was executed as expected.
     uint8_t params[] = {0x01, 0x14, 0x01};
-    PN532_CallFunction(pn532, PN532_COMMAND_SAMCONFIGURATION,
+    pn532_send_command(PN532_COMMAND_SAMCONFIGURATION,
                        NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
     return PN532_STATUS_OK;
 }
-
-
-
 
 
 /**
@@ -373,9 +375,9 @@ int PN532_SamConfiguration(PN532* pn532) {
 
 
 
-//--------- NFC TAG DUMP ------------
+//--------- NFC TAG DUMP ----------------
 
-void tag_dump() {
+/*void tag_dump() {
     uint8_t buff[255];
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -429,3 +431,5 @@ void tag_dump() {
     }
 
 }
+
+*/

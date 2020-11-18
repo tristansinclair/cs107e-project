@@ -153,4 +153,10 @@ int pn532_send_command(byte_t command, byte_t *response, size_t response_length,
  */
 int pn532_get_firmware_version(byte_t *version);
 
+
+
+// configure the SAM to normal mode
+int pn532_SamConfig();
+
+
 #endif // _PN532_H

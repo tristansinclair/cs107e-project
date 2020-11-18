@@ -102,6 +102,16 @@ void basic_tests(void)
     printf("----------------------------------------\n");
 }
 
+void test_SamConfig() {
+    if (PN532_GetFirmwareVersion(&pn532, buff) == PN532_STATUS_OK) {
+        printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
+    } else {
+        return -1;
+    }
+    pn532_SamConfig();
+}
+
+
 void main(void)
 {
     pn532_init(RESET_PIN, NSS_PIN);
