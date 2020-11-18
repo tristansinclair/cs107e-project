@@ -15,14 +15,14 @@ void print_bytes(uint8_t *buf, size_t bufsize)
 {
     // Print vertical line numbers
     printf("\n     ");
-    for (int i = 0; i < 16; i++)
+    int num_length = bufsize < 16 ? bufsize : 16;
+    for (int i = 0; i < num_length; i++)
     {
         if (i > 9)
             printf("%d ", i);
         else
             printf(" %d ", i);
     }
-    printf("\n");
 
     for (int i = 0; i < bufsize; i++)
     {
