@@ -308,3 +308,33 @@ int pn532_get_firmware_version(byte_t *version)
 {
     return pn532_send_command(PN532_COMMAND_GETFIRMWAREVERSION, version, 4, NULL, 0, 500);
 }
+
+// int pn532_read_passive_target(, byte_t card_baud)
+// {
+//     uint8_t uid[MIFARE_UID_MAX_LENGTH];
+//     uint8_t params[] = {0x01, card_baud};
+//     uint8_t buff[19];
+
+//     int length = pn532_send_command(5, buff, sizeof(buff), params, sizeof(params));
+
+//     if (length < 0)
+//     {
+//         return PN532_STATUS_ERROR; // No card found
+//     }
+//     // Check only 1 card with up to a 7 byte UID is present.
+//     if (buff[0] != 0x01)
+//     {
+//         printf("More than one card detected!\n");
+//         return PN532_STATUS_ERROR;
+//     }
+//     if (buff[5] > 7)
+//     {
+//         printf("Found card with unexpectedly long UID!\n");
+//         return PN532_STATUS_ERROR;
+//     }
+//     for (uint8_t i = 0; i < buff[5]; i++)
+//     {
+//         response[i] = buff[6 + i];
+//     }
+//     return buff[5];
+// }
