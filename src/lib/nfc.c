@@ -65,7 +65,7 @@ int pn532_read_passive_target(uint8_t *response, uint8_t card_baud, size_t timeo
     return buf[5];
 }
 
-int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_number, uint16_t key_number, uint8_t *key)
+int pn532_authenticate_block(uint8_t *uid, size_t uid_length, size_t block_number, size_t key_number, uint8_t *key)
 {
     // Build parameters for InDataExchange command to authenticate MiFare card.
     uint8_t response[1] = {0xFF};
@@ -75,12 +75,12 @@ int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_nu
     params[2] = block_number & 0xFF;
 
     // params[3:3+keylen] = key
-    for (uint8_t i = 0; i < MIFARE_KEY_LENGTH; i++)
+    for (int i = 0; i < MIFARE_KEY_LENGTH; i++)
     {
         params[3 + i] = key[i];
     }
     // params[3+keylen:] = uid
-    for (uint8_t i = 0; i < uid_length; i++)
+    for (int i = 0; i < uid_length; i++)
     {
         params[3 + MIFARE_KEY_LENGTH + i] = uid[i];
     }
@@ -90,7 +90,7 @@ int pn532_authenticate_block(uint8_t *uid, uint8_t uid_length, uint16_t block_nu
     return response[0];
 }
 
-int pn532_read_block(uint8_t *response, uint16_t block_number)
+int pn532_read_block(uint8_t *response, size_t block_number)
 {
     uint8_t params[] = {0x01, MIFARE_CMD_READ, block_number & 0xFF};
     uint8_t buf[MIFARE_BLOCK_LENGTH + 1];
@@ -103,7 +103,7 @@ int pn532_read_block(uint8_t *response, uint16_t block_number)
     {
         return buf[0];
     }
-    for (uint8_t i = 0; i < MIFARE_BLOCK_LENGTH; i++)
+    for (int i = 0; i < MIFARE_BLOCK_LENGTH; i++)
     {
         response[i] = buf[i + 1];
     }

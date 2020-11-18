@@ -55,7 +55,7 @@ void test_sam_config(void)
     }
     if (pn532_config_normal() == PN532_STATUS_OK)
     {
-        printf("SamConfig successefully executed. HAT should now be in normal mode.");
+        printf("SamConfig successefully executed. HAT should now be in normal mode.\n");
     };
 }
 
@@ -64,8 +64,11 @@ void test_sam_config(void)
  * ---------------------
  * @description: make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
  */
-void test_get_card_uid(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
+void test_get_card_uid(void)
 {
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    int32_t uid_len;
+
     assert(pn532_config_normal() == PN532_STATUS_OK);
 
     printf("SamConfig successefully executed. HAT should now be in normal mode.\n");
@@ -74,15 +77,15 @@ void test_get_card_uid(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
     while (1)
     {
         // Check if a card is available to read
-        *uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
-        if (*uid_len == PN532_STATUS_ERROR)
+        uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR)
         {
             printf(".");
         }
         else
         {
             printf("Found card with UID: ");
-            for (uint8_t i = 0; i < *uid_len; i++)
+            for (uint8_t i = 0; i < uid_len; i++)
             {
                 printf("%02x ", uid[i]);
             }
@@ -99,34 +102,54 @@ void test_get_card_uid(int32_t *uid_len, uint8_t uid[MIFARE_UID_MAX_LENGTH])
  */
 void test_get_block_info(void)
 {
-    int32_t uid_len = 0;                // length of UID returned
-    uint8_t uid[MIFARE_UID_MAX_LENGTH]; // holds the UID received from the HAT
-    test_get_card_uid(&uid_len, uid);   // fill in the UID
+    pn532_config_normal();
+
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    int32_t uid_len;
+
+    while (1)
+    {
+        // Check if a card is available to read
+        uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR)
+        {
+            printf(".");
+        }
+        else
+        {
+            printf("Found card with UID: ");
+            for (uint8_t i = 0; i < uid_len; i++)
+            {
+                printf("%02x ", uid[i]);
+            }
+            printf("\r\n");
+            break;
+        }
+    }
 
     uint8_t buf[255];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // store the default passcode for the tag blocks
     unsigned int pn532_error = PN532_ERROR_NONE;
 
     printf("Reading blocks...\r\n");
-    for (uint8_t block_number = 0; block_number < 64; block_number++)
+
+    uint8_t buf2[1024];
+
+    for (size_t block_number = 0; block_number < 64; block_number++)
     {
+        //int timer = timer_get_ticks();
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
-        if (pn532_error != PN532_ERROR_NONE)
-        {
-            break;
-        }
+        assert(pn532_error == PN532_ERROR_NONE);
+        // timer = timer_get_ticks() - timer;
+        // printf("%d\n", timer);
+
         pn532_error = pn532_read_block(buf, block_number);
-        if (pn532_error != PN532_ERROR_NONE)
-        {
-            break;
-        }
-        printf("%d: ", block_number);
-        for (uint8_t i = 0; i < 16; i++)
-        {
-            printf("%02x ", buf[i]);
-        }
-        printf("\r\n");
+        assert(pn532_error == PN532_ERROR_NONE);
+
+        memcpy(buf2 + 16 * block_number, buf, 16);
     }
+    print_bytes(buf2, 1024);
+    printf("\r\n");
     if (pn532_error)
     {
         printf("Error: 0x%02x\r\n", pn532_error);
@@ -168,21 +191,21 @@ void test_get_block_info(void)
 void main(void)
 {
     nfc_init(RESET_PIN, NSS_PIN);
-    // test_spi_transfer();
-    // test2();
-    // test_firmwareVersion();
 
-    //----------VX Tests----------
-    test_sam_config();
-    // test_get_card_uid();
-    test_get_block_info();
-
+    printf("\n\n------------- Firmware Version Test -------------\n");
     test_firmware_version(); // request and print firmware version
+    printf("\n-------------------------------------------------\n\n\n");
 
     /* ----------VX Tests---------- */
-    // test_sam_config();
-    // test_get_card_uid();
-    // test_get_block_info();
+    printf("----------------- SamConfig Test ----------------\n");
+    test_sam_config();
+    printf("\n-------------------------------------------------\n\n\n");
+
+    printf("------------------ Get Card UID -----------------\n");
+    test_get_card_uid();
+    printf("\n-------------------------------------------------\n\n\n");
+
+    test_get_block_info();
 
     uart_putchar(EOT);
 }
