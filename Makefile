@@ -19,7 +19,7 @@ CFLAGS_EXTRA = -Werror
 CFLAGS 	= -I$(CS107E)/include -Iinclude -Og -g -Wall -std=c99 -ffreestanding $(CFLAGS_EXTRA)
 CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name -Wpointer-arith
 LDFLAGS	= -nostdlib -T src/boot/memmap -L$(CS107E)/lib
-LDLIBS 	= -lpi -lgcc -lpiextra # TODO: link against any other libraries that you need for your project.
+LDLIBS 	= -lpi -lgcc -lpiextra
 
 # Search for .c and .s files in the src directory's subdirectories.
 # https://www.cmcrossroads.com/article/basics-vpath-and-vpath
