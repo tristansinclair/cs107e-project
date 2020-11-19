@@ -253,11 +253,12 @@ int get_block_info(uint8_t *response, size_t block_number)
 
     while (1)
     {
-        // Check if a card is available to read
+        
+        printf("Please scan your card!\n"); // Check if a card is available to read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
         if (uid_len == PN532_STATUS_ERROR)
         {
-            printf(".");
+            //printf(".");
         }
         else
         {

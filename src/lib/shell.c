@@ -82,11 +82,10 @@ int cmd_set_tag_value(int argc, const char *argv[])
     }
 
     shell_printf("Please scan your card!\n");
-    int *balance = 0;
     int error_code = PN532_ERROR_NONE;
 
-    *balance += strtonum(argv[1], NULL);
-    error_code = set_balance(*balance);
+    int balance = strtonum(argv[1], NULL);
+    error_code = set_balance(balance);
 
     if (error_code != PN532_ERROR_NONE)
     {
@@ -94,7 +93,7 @@ int cmd_set_tag_value(int argc, const char *argv[])
         return 1;
     }
 
-    shell_printf("New Balance: %d\n", *balance);
+    shell_printf("New Balance: %d\n", balance);
     return 0;
 }
 
