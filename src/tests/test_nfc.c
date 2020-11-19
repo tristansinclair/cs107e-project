@@ -135,22 +135,23 @@ void test_get_block_info(void)
 
     uint8_t buf2[1024];
 
-    for (size_t block_number = 0; block_number < 5; block_number++)
+
+    #define num_blocks 64
+
+    for (size_t block_number = 0; block_number < num_blocks/2 ; block_number++)
     {
-        //int timer = timer_get_ticks();
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
         printf("authenticating...\n");
         assert(pn532_error == PN532_ERROR_NONE);
-        // timer = timer_get_ticks() - timer;
-        // printf("%d\n", timer);
+
 
         pn532_error = pn532_read_block(buf, block_number);
-        printf("reading...\n");
+        printf("reading block %d...\n", block_number);
         assert(pn532_error == PN532_ERROR_NONE);
 
         memcpy(buf2 + 16 * block_number, buf, 16);
     }
-    print_bytes(buf2, 1024);
+    print_bytes(buf2, (num_blocks/2)*16);
     printf("\r\n");
     if (pn532_error)
     {
