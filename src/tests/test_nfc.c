@@ -135,7 +135,6 @@ void test_get_block_info(void)
 
     uint8_t buf2[1024];
 
-
     #define num_blocks 64
 
     for (size_t block_number = 0; block_number < num_blocks/2 ; block_number++)
@@ -170,7 +169,7 @@ int test_rw() {
     uint8_t buff[255];
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    uint32_t pn532_error = PN532_ERROR_NONE;
+    unsigned int pn532_error = PN532_ERROR_NONE;
     int32_t uid_len = 0;
 
     if (pn532_get_firmware_version(buff) == PN532_STATUS_OK) {
@@ -178,7 +177,7 @@ int test_rw() {
     } else {
         return -1;
     }
-    pn532_sam_config();
+    pn532_config_normal();
     printf("Waiting for RFID/NFC card...\r\n");
 
 
@@ -202,7 +201,7 @@ int test_rw() {
     
     
     
-    //---------------- WRITE TO BLOCK 6 ---------------------------
+    //--------------------- WRITE TO BLOCK 6 ---------------------------
     
     /**
       * Warning: DO NOT write the blocks of 4N+3 (3, 7, 11, ..., 63)
@@ -222,14 +221,12 @@ int test_rw() {
         return -1;
     }
 
-
     //initial block value
     pn532_error = pn532_read_block(buff, block_number); //read the block before writing
-    assert(pn532_error == PN532_ERROR_NONE);
-    for (uint8_t i = 0; i < sizeof(DATA); i++) {
-            printf("Initial block #%d, byte #%d \r\n", block_number, i);
+    assert(pn532_error == PN532_ERROR_NONE); 
+    for (uint8_t i = 0; i < sizeof(DATA); i++) { //print the block data
+            printf("Initial block #%d, byte #%d:  %d \r\n", block_number, i, buff[i]);
     }
-
 
 
     pn532_error = pn532_write_block(DATA, block_number);
@@ -248,32 +245,34 @@ int test_rw() {
             return -1;
         }
     }
-    printf("Write block %d successfully\r\n", block_number);
-    for (uint8_t i = 0; i < sizeof(DATA); i++) {
-            printf("Final block #%d, byte #%d \r\n", block_number, i);
+    printf("Wrote block %d successfully\r\n", block_number);
+    for (uint8_t i = 0; i < sizeof(DATA); i++) { //print the block data
+            printf("Final block #%d, byte #%d: %d\r\n", block_number, i, buff[i]);
     }
+
+    return 10; //return for successful completion
 }
 
 void main(void)
 {
     nfc_init(RESET_PIN, NSS_PIN);
 
-    printf("\n\n------------- Firmware Version Test -------------\n");
+    // printf("\n\n------------- Firmware Version Test -------------\n");
     // test_firmware_version(); // request and print firmware version
-    printf("\n-------------------------------------------------\n\n\n");
+    // printf("\n-------------------------------------------------\n\n\n");
 
     /* ----------VX Tests---------- */
-    printf("----------------- SamConfig Test ----------------\n");
+    // printf("----------------- SamConfig Test ----------------\n");
     // test_sam_config();
-    printf("\n-------------------------------------------------\n\n\n");
+    // printf("\n-------------------------------------------------\n\n\n");
 
-    printf("------------------ Get Card UID -----------------\n");
+    // printf("------------------ Get Card UID -----------------\n");
     // test_get_card_uid();
-    printf("\n-------------------------------------------------\n\n\n");
+    // printf("\n-------------------------------------------------\n\n\n");
 
-    test_get_block_info();
+    // test_get_block_info();
 
-    // test_rw();
+    test_rw();
 
     uart_putchar(EOT);
 }
