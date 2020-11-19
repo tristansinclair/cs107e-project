@@ -147,14 +147,14 @@ int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
     return response[0];
 }
 
-int get_balance(void)
+int get_balance(int *value)
 {
     pn532_config_normal();
 
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
 
-    printf("Please scan your card!\n");
+    //printf("Please scan your card!\n");
     while (1)
     {
         // Check if a card is available to read
@@ -172,7 +172,8 @@ int get_balance(void)
 
     if (pn532_error)
     {
-        printf("Error: 0x%02x\r\n", pn532_error);
+        //printf("Error: 0x%02x\r\n", pn532_error);
+        return pn532_error;
     }
 
     int balance = 0;
@@ -182,7 +183,9 @@ int get_balance(void)
         balance |= buf[byte];
     }
 
-    return balance;
+    memcpy(value, &balance, 4); // copy balance over to or value
+
+    return PN532_ERROR_NONE;
 }
 
 int set_balance(int balance)
@@ -203,7 +206,7 @@ int set_balance(int balance)
 
     pn532_config_normal();
 
-    printf("Waiting for RFID/NFC card...\r\n");
+    // wait for card to be available for writing
     while (1)
     {
         // Check if a card is available to read
@@ -221,19 +224,20 @@ int set_balance(int balance)
 
     // Write to balance block
     uint8_t block_number = BALANCE_BLOCK;
-
     pn532_error = pn532_authenticate_block(uid, uid_len,
                                            block_number, MIFARE_CMD_AUTH_A, key_a);
     if (pn532_error)
     {
-        printf("Error: 0x%02x\r\n", pn532_error);
-        return -1;
+        //printf("Error: 0x%02x\r\n", pn532_error);
+        return pn532_error;
     }
     pn532_error = pn532_mifare_classic_write_block(DATA, block_number);
     if (pn532_error)
     {
-        printf("Error: 0x%02x\r\n", pn532_error);
-        return -1;
+        // printf("Error: 0x%02x\r\n", pn532_error);
+        // return -1;
+        return pn532_error;
     }
+
     return PN532_ERROR_NONE;
 }

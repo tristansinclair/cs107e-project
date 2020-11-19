@@ -88,16 +88,17 @@ int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number);
  * @fn get_balance
  * ---------------------
  * @description: Get balance of a key card. Waits until card is scanned.
- * @returns: the balance of the card.
+ *  @param value: an int passed by reference to write the current balance to.
+ * @returns: returns pn532 error code.
  */
-int get_balance(void);
+int get_balance(int *value);
 
 /**
- * @fn get_balance
+ * @fn set_balance
  * ---------------------
  * @description: Sets the balance of a key card.
- * @param balance: the balance we want to set.
- * @returns: returns error code. -1 = error.
+ * @param balance: the balance value we want to set.
+ * @returns: returns pn532 error code.
  */
 int set_balance(int balance);
 

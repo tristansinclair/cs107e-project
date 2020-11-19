@@ -234,22 +234,29 @@ int test_rw_mifare(void)
 
 void test_card_balance(void)
 {
+    int *value = 0;
+
     printf("Running test_card_balance.\n");
     printf("Begin by placing fob on the scanner until balance is set.\n");
-    assert(set_balance(100) == 0);
+    assert(set_balance(100) == PN532_ERROR_NONE);
     printf("Balance set to 100\n");
 
     timer_delay(2);
     printf("\nScan fob to show balance\n");
-    printf("Current Balance: %d\n", get_balance());
+    assert(get_balance(value) == PN532_ERROR_NONE);
+    printf("Current Balance: %d\n", *value);
 
     timer_delay(2);
     printf("\nNow scan once more to deduct 25\n");
-    assert(set_balance(75) == 0);
+    assert(set_balance(75) == PN532_ERROR_NONE);
+    printf("Balanced deducted.\n");
+
 
     timer_delay(2);
     printf("\nScan fob to show balance\n");
-    printf("Current Balance: %d\n", get_balance());
+    assert(get_balance(value) == PN532_ERROR_NONE);
+    printf("Current Balance: %d\n", *value);
+    printf("test_card_balance complete.\n");
 }
 
 void main(void)

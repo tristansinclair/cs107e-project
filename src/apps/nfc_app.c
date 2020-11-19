@@ -11,6 +11,10 @@
 #include <keyboard.h>
 #include <interrupts.h>
 #include <gpio_interrupts.h>
+#include <nfc.h>
+
+static const unsigned int RESET_PIN = GPIO_PIN20;
+static const unsigned int NSS_PIN = GPIO_PIN4;
 
 void main(void)
 {
@@ -20,6 +24,7 @@ void main(void)
     interrupts_global_enable(); // everything fully initialized, now turn on interrupts
     keyboard_init(GPIO_PIN5, GPIO_PIN6);
     shell_init(printf);
+    nfc_init(RESET_PIN, NSS_PIN);
 
     shell_run();
 

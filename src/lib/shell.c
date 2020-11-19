@@ -7,25 +7,26 @@
 #include "pi.h"
 #include <printf.h>
 #include <nfc_shell_commands.h>
+#include "nfc.h"
 
 #define LINE_LEN 80
 
 static formatted_fn_t shell_printf;
 typedef unsigned char uint8_t;
 
-static const size_t COMMAND_SIZE = 5;
 static const command_t commands[] = {
     {"help", "<cmd> prints a list of commands or description of cmd", cmd_help},
     {"echo", "<...> echos the user input to the screen", cmd_echo},
     {"reboot", "reboots the Raspberry Pi back to the bootloader", cmd_reboot},
     {"peek", "[address] prints the contents of memory at address", cmd_peek},
     {"poke", "[address] [value] store value into memory at address", cmd_poke},
-    // {"charge", "[value] charges tag with value", cmd_charge_tag},
-    // {"read", "[block number] prints block", cmd_read_tag},
+    {"charge", "[value] charges tag with value", cmd_charge_tag},
+    {"read", "[block number] prints block", cmd_read_tag},
     // {"pay", "[value] pays tag with value", cmd_pay_tag},
     // {"set", "[value] sets tag balance", cmd_set_tag_value},
     // {"check", "checks tag balance", cmd_check_tag_balance},
 };
+static const size_t COMMAND_SIZE = sizeof(commands) / sizeof(commands[0]);
 
 // static void print_bytes(uint8_t *buf, size_t bufsize)
 // {
@@ -49,6 +50,39 @@ static const command_t commands[] = {
 //     shell_printf("\n");
 // }
 
+int cmd_charge_tag(int argc, const char *argv[])
+{
+    if (argc == 2)
+    {
+        shell_printf("Please scan your card!\n");
+        int *balance = 0;
+
+        int error_code = get_balance(balance);
+        if (error_code != PN532_ERROR_NONE)
+        {
+            shell_printf("Error: 0x%02x\r\n", error_code);
+            return 1;
+        }
+
+        *balance -= strtonum(argv[1], NULL);
+
+        error_code = set_balance(*balance);
+        if (error_code != PN532_ERROR_NONE)
+        {
+            shell_printf("Error: 0x%02x\r\n", error_code);
+            return 1;
+        }
+
+        shell_printf("New Balance: %d\n", *balance);
+        return -1;
+    }
+    else
+    {
+        shell_printf("error: charge takes 1 argument [cost]\n");
+        return 1;
+    }
+}
+
 int cmd_read_tag(int argc, const char *argv[])
 {
     // Check that command has no args
@@ -57,11 +91,18 @@ int cmd_read_tag(int argc, const char *argv[])
         shell_printf("error: read takes no arguments\n");
         return 1;
     }
+    shell_printf("Please scan your card!\n");
+    int *balance = 0;
 
+    int error_code = get_balance(balance);
+    if (error_code != PN532_ERROR_NONE)
+    {
+        shell_printf("Error: 0x%02x\r\n", error_code);
+        return 1;
+    }
+
+    shell_printf("Current Balance: %d\n", *balance);
     return -1;
-
-    // Print tag
-    return 0;
 }
 
 /**
