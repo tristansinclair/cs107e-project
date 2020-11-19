@@ -6,6 +6,7 @@
 #ifndef _NFC_SHELL_COMMANDS_H
 #define _NFC_SHELL_COMMANDS_H
 
+// Disclaimer: all functions are blocking
 /**
  * @fn cmd_read_tag
  * ---------------------
