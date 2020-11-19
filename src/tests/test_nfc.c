@@ -196,7 +196,7 @@ int test_rw_mifare(void)
       * 2.  Block 0 is unwritable. 
       */
     // Write block #6
-    uint8_t block_number = 8;
+    uint8_t block_number = 6;
     uint8_t DATA[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
     pn532_error = pn532_authenticate_block(uid, uid_len,
                                            block_number, MIFARE_CMD_AUTH_A, key_a);
@@ -232,26 +232,44 @@ int test_rw_mifare(void)
     return PN532_ERROR_NONE;
 }
 
+void test_card_balance(void)
+{
+    printf("Running test_card_balance.\n");
+    printf("Begin by placing fob on the scanner until balance is set.\n");
+    assert(set_balance(100) == 0);
+    printf("Balance set to 100\n");
+
+    timer_delay(2);
+    printf("\nScan fob to show balance\n");
+    printf("Current Balance: %d\n", get_balance());
+
+    timer_delay(2);
+    printf("\nNow scan once more to deduct 25\n");
+    assert(set_balance(75) == 0);
+
+    timer_delay(2);
+    printf("\nScan fob to show balance\n");
+    printf("Current Balance: %d\n", get_balance());
+}
+
 void main(void)
 {
     nfc_init(RESET_PIN, NSS_PIN);
 
-    printf("\n\n------------- Firmware Version Test -------------\n");
-    test_firmware_version(); // request and print firmware version
-    printf("\n-------------------------------------------------\n\n\n");
+    // printf("\n\n------------- Firmware Version Test -------------\n");
+    // test_firmware_version(); // request and print firmware version
+    // printf("\n-------------------------------------------------\n\n\n");
 
-    /* ----------VX Tests---------- */
-    printf("----------------- SamConfig Test ----------------\n");
-    test_sam_config();
-    printf("\n-------------------------------------------------\n\n\n");
+    // /* ----------VX Tests---------- */
+    // printf("----------------- SamConfig Test ----------------\n");
+    // test_sam_config();
+    // printf("\n-------------------------------------------------\n\n\n");
 
-    printf("------------------ Get Card UID -----------------\n");
-    test_get_card_uid();
-    printf("\n-------------------------------------------------\n\n\n");
+    // printf("------------------ Get Card UID -----------------\n");
+    // test_get_card_uid();
+    // printf("\n-------------------------------------------------\n\n\n");
 
-    test_get_block_info();
-
-    // test_rw_mifare();
+    test_card_balance();
 
     uart_putchar(EOT);
 }

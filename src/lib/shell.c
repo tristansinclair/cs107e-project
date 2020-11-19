@@ -58,6 +58,8 @@ int cmd_read_tag(int argc, const char *argv[])
         return 1;
     }
 
+    return -1;
+
     // Print tag
     return 0;
 }

@@ -84,4 +84,21 @@ int pn532_read_block(uint8_t *response, size_t block_number);
  */
 int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number);
 
+/**
+ * @fn get_balance
+ * ---------------------
+ * @description: Get balance of a key card. Waits until card is scanned.
+ * @returns: the balance of the card.
+ */
+int get_balance(void);
+
+/**
+ * @fn get_balance
+ * ---------------------
+ * @description: Sets the balance of a key card.
+ * @param balance: the balance we want to set.
+ * @returns: returns error code. -1 = error.
+ */
+int set_balance(int balance);
+
 #endif // _NFC_H

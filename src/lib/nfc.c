@@ -6,6 +6,8 @@
 
 #include <nfc.h>
 
+#define BALANCE_BLOCK 6
+
 void nfc_init(unsigned int reset_pin, unsigned int nss_pin)
 {
     pn532_init(reset_pin, nss_pin);
@@ -114,7 +116,7 @@ int pn532_read_block(uint8_t *response, size_t block_number)
 
 //--------------VX SUPPORTING-----------------
 
-void run_check_config()
+void run_check_config(void)
 {
     //helper fxn to run SamConfig and print conditions for mode configuration
     if (pn532_config_normal() == PN532_STATUS_OK)
@@ -145,20 +147,19 @@ int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
     return response[0];
 }
 
-int get_balance(uint8_t *response)
+int get_balance(void)
 {
     pn532_config_normal();
 
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
 
+    printf("Please scan your card!\n");
     while (1)
     {
         // Check if a card is available to read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
-        if (uid_len == PN532_STATUS_ERROR)
-            printf("Error reading tag.");
-        else
+        if (uid_len != PN532_STATUS_ERROR)
             break;
     }
 
@@ -174,9 +175,65 @@ int get_balance(uint8_t *response)
         printf("Error: 0x%02x\r\n", pn532_error);
     }
 
-    memcpy(response, buf, 4);
+    int balance = 0;
+    for (int byte = 0; byte < 4; byte++)
+    {
+        balance <<= 8;
+        balance |= buf[byte];
+    }
+
+    return balance;
 }
 
-int set_balance()
+int set_balance(int balance)
 {
+    uint8_t DATA[16];
+    memset(&DATA, 0x00, 16);
+    for (int i = 0; i < 4; i++) // store balance in DATA
+    {
+
+        uint8_t byte = (balance >> (8 * i)) & 0xff;
+        DATA[3 - i] = byte;
+    }
+
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    unsigned int pn532_error = PN532_ERROR_NONE;
+    int32_t uid_len = 0;
+
+    pn532_config_normal();
+
+    printf("Waiting for RFID/NFC card...\r\n");
+    while (1)
+    {
+        // Check if a card is available to read
+        uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR)
+        {
+            //printf(".");
+        }
+        else
+        {
+            //printf("\nRFID/NFC card found.\n");
+            break;
+        }
+    }
+
+    // Write to balance block
+    uint8_t block_number = BALANCE_BLOCK;
+
+    pn532_error = pn532_authenticate_block(uid, uid_len,
+                                           block_number, MIFARE_CMD_AUTH_A, key_a);
+    if (pn532_error)
+    {
+        printf("Error: 0x%02x\r\n", pn532_error);
+        return -1;
+    }
+    pn532_error = pn532_mifare_classic_write_block(DATA, block_number);
+    if (pn532_error)
+    {
+        printf("Error: 0x%02x\r\n", pn532_error);
+        return -1;
+    }
+    return PN532_ERROR_NONE;
 }
