@@ -228,7 +228,6 @@ int test_rw() {
             printf("Initial block #%d, byte #%d:  %d \r\n", block_number, i, buff[i]);
     }
 
-
     pn532_error = pn532_write_block(DATA, block_number);
     if (pn532_error) {
         printf("Error: 0x%02x\r\n", pn532_error);
