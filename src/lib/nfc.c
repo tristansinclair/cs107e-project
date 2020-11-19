@@ -127,20 +127,3 @@ void run_check_config()
         return;
     }
 }
-
-int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
-{
-    uint8_t params[MIFARE_BLOCK_LENGTH + 3];
-    uint8_t response[1];
-    params[0] = 0x01; // Max card numbers
-    params[1] = MIFARE_CMD_WRITE;
-    params[2] = block_number & 0xFF;
-
-    for (int i = 0; i < MIFARE_BLOCK_LENGTH; i++)
-    {
-        params[3 + i] = data[i];
-    }
-
-    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response), params, sizeof(params), PN532_DEFAULT_TIMEOUT);
-    return response[0];
-}

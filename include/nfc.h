@@ -73,14 +73,4 @@ int pn532_authenticate_block(uint8_t *uid, size_t uid_length, size_t block_numbe
  */
 int pn532_read_block(uint8_t *response, size_t block_number);
 
-/**
- * @fn pn532_mifare_classic_write_block
- * ---------------------
- * @description: Write a block of data of length 16 to the card at block block number.
- * @param data: data to write.
- * @param block_number: specify a block to write.
- * @returns: PN532 error code.
- */
-int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number);
-
 #endif // _NFC_H
