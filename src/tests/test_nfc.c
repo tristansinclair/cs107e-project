@@ -144,7 +144,6 @@ void test_get_block_info(void)
         printf("authenticating...\n");
         assert(pn532_error == PN532_ERROR_NONE);
 
-
         pn532_error = pn532_read_block(buf, block_number);
         printf("reading block %d...\n", block_number);
         assert(pn532_error == PN532_ERROR_NONE);
@@ -159,83 +158,101 @@ void test_get_block_info(void)
     }
 }
 
-// int test_rw_mifare(void)
-// {
-//     uint8_t buf[255];
-//     uint8_t uid[MIFARE_UID_MAX_LENGTH];
-//     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-//     unsigned int pn532_error = PN532_ERROR_NONE;
-//     int32_t uid_len = 0;
 
-//     pn532_config_normal();
 
-//     printf("Waiting for RFID/NFC card...\r\n");
-//     while (1)
-//     {
-//         // Check if a card is available to read
-//         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
-//         if (uid_len == PN532_STATUS_ERROR)
-//         {
-//             printf(".");
-//         }
-//         else
-//         {
-//             printf("\nFound card with UID: ");
-//             for (uint8_t i = 0; i < uid_len; i++)
-//             {
-//                 printf("%02x ", uid[i]);
-//             }
-//             printf("\r\n");
-//             break;
-//         }
-//     }
-//     /**
-//       * Warning: DO NOT write the blocks of 4N+3 (3, 7, 11, ..., 63)
-//       * or else you will change the password for blocks 4N ~ 4N+2.
-//       * Note: 
-//       * 1.  The first 6 bytes (KEY A) of the 4N+3 blocks are always shown as 0x00,
-//       * since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the 
-//       * 4N+3 blocks are readable.
-//       * 2.  Block 0 is unwritable. 
-//       */
-//     // Write block #6
 
-//     /*
-//     uint8_t block_number = 8;
-//     uint8_t DATA[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
-//     pn532_error = pn532_authenticate_block(uid, uid_len,
-//                                            block_number, MIFARE_CMD_AUTH_A, key_a);
-//     if (pn532_error)
-//     {
-//         printf("Error: 0x%02x\r\n", pn532_error);
-//         return -1;
-//     }
-//     pn532_error = pn532_mifare_classic_write_block(DATA, block_number);
-//     if (pn532_error)
-//     {
-//         printf("Error: 0x%02x\r\n", pn532_error);
-//         return -1;
-//     }
-//     pn532_error = pn532_read_block(buf, block_number);
-//     if (pn532_error)
-//     {
-//         printf("Error: 0x%02x\r\n", pn532_error);
-//         return -1;
-//     }
-//     for (uint8_t i = 0; i < sizeof(DATA); i++)
-//     {
-//         if (DATA[i] != buf[i])
-//         {
-//             printf("Write block %d failed\r\n", block_number);
-//             return -1;
-//         }
-//     }
-//     printf("Write block %d successfully\r\n", block_number);
 
-//     print_bytes(buf, 255);
 
-//     return PN532_ERROR_NONE;
-// }
+
+
+
+int test_rw() {
+    uint8_t buff[255];
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint32_t pn532_error = PN532_ERROR_NONE;
+    int32_t uid_len = 0;
+
+    if (pn532_get_firmware_version(buff) == PN532_STATUS_OK) {
+        printf("Found PN532 with firmware version: %d.%d\r\n", buff[1], buff[2]);
+    } else {
+        return -1;
+    }
+    pn532_sam_config();
+    printf("Waiting for RFID/NFC card...\r\n");
+
+
+    //waiting for card to appear
+    while (1)
+    {
+        uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR)
+        {
+            printf(".");
+        } else {
+            printf("Found card with UID: ");
+            for (uint8_t i = 0; i < uid_len; i++)
+            {
+                printf("%02x ", uid[i]);
+            }
+            printf("\r\n");
+            break;
+        }
+    }
+    
+    
+    
+    //---------------- WRITE TO BLOCK 6 ---------------------------
+    
+    /**
+      * Warning: DO NOT write the blocks of 4N+3 (3, 7, 11, ..., 63)
+      * or else you will change the password for blocks 4N ~ 4N+2.
+      * Note: 
+      * 1.  The first 6 bytes (KEY A) of the 4N+3 blocks are always shown as 0x00,
+      * since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the 
+      * 4N+3 blocks are readable.
+      * 2.  Block 0 is unwritable. 
+      */
+    // Write block #6
+    uint8_t block_number = 6;
+    uint8_t DATA[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}; //sample data for writing
+    pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a); //unlock block
+    if (pn532_error) {
+        printf("Error: 0x%02x\r\n", pn532_error);
+        return -1;
+    }
+
+
+    //initial block value
+    pn532_error = pn532_read_block(buff, block_number); //read the block before writing
+    assert(pn532_error == PN532_ERROR_NONE);
+    for (uint8_t i = 0; i < sizeof(DATA); i++) {
+            printf("Initial block #%d, byte #%d \r\n", block_number, i);
+    }
+
+
+
+    pn532_error = pn532_write_block(DATA, block_number);
+    if (pn532_error) {
+        printf("Error: 0x%02x\r\n", pn532_error);
+        return -1;
+    }
+    pn532_error = pn532_read_block(buff, block_number);
+    if (pn532_error) {
+        printf("Error: 0x%02x\r\n", pn532_error);
+        return -1;
+    }
+    for (uint8_t i = 0; i < sizeof(DATA); i++) {
+        if (DATA[i] != buff[i]) {
+            printf("Write block %d failed\r\n", block_number);
+            return -1;
+        }
+    }
+    printf("Write block %d successfully\r\n", block_number);
+    for (uint8_t i = 0; i < sizeof(DATA); i++) {
+            printf("Final block #%d, byte #%d \r\n", block_number, i);
+    }
+}
 
 void main(void)
 {
@@ -256,7 +273,7 @@ void main(void)
 
     test_get_block_info();
 
-    // test_rw_mifare();
+    // test_rw();
 
     uart_putchar(EOT);
 }

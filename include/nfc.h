@@ -73,4 +73,17 @@ int pn532_authenticate_block(uint8_t *uid, size_t uid_length, size_t block_numbe
  */
 int pn532_read_block(uint8_t *response, size_t block_number);
 
+
+/**
+  * @brief: Write a block of data to the card.  Block number should be the block
+  *     to write and data should be a byte array of length 16 with the data to
+  *     write.
+  * @param data: data to write.
+  * @param block_number: specify a block to write.
+  * @retval: PN532 error code.
+  */
+int pn532_write_block(uint8_t* data, uint16_t block_number);
+
+
+
 #endif // _NFC_H
