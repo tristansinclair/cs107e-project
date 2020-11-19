@@ -139,11 +139,13 @@ void test_get_block_info(void)
     {
         //int timer = timer_get_ticks();
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
+        printf("authenticating...\n");
         assert(pn532_error == PN532_ERROR_NONE);
         // timer = timer_get_ticks() - timer;
         // printf("%d\n", timer);
 
         pn532_error = pn532_read_block(buf, block_number);
+        printf("reading...\n");
         assert(pn532_error == PN532_ERROR_NONE);
 
         memcpy(buf2 + 16 * block_number, buf, 16);
