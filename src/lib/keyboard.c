@@ -233,12 +233,10 @@ void keyboard_init(unsigned int clock_gpio, unsigned int data_gpio)
 
     // Send acknowledgement to keyboard
     if (ps2_write(PS2_CMD_RESET))
-        ;
-    // {
-    //     unsigned char response = keyboard_read_scancode();
-    //     (void)response; // instead ignore self-test result, may correct itself
-    // }
-    printf("debug\n");
+    {
+        unsigned char response = keyboard_read_scancode();
+        (void)response; // instead ignore self-test result, may correct itself
+    }
 
     // Configure pin interrutps
     gpio_set_input(CLK);
