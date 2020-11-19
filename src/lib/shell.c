@@ -28,7 +28,7 @@ static const command_t commands[] = {
 };
 static const size_t COMMAND_SIZE = sizeof(commands) / sizeof(commands[0]);
 
-static void print_bytes(uint8_t *buf, size_t bufsize)
+static void print_blocks(uint8_t *buf, size_t bufsize)
 {
     // Print vertical line numbers
     shell_printf("\n     ");
@@ -162,7 +162,7 @@ int cmd_charge_tag(int argc, const char *argv[])
 
 int cmd_read_tag(int argc, const char *argv[])
 {
-    uint8_t *response[1024];
+    uint8_t response[1024];
     size_t response_length = 0;
 
     if (argc == 1)
@@ -181,7 +181,8 @@ int cmd_read_tag(int argc, const char *argv[])
         return 1;
     }
 
-    print_bytes(response, response_length);
+    print_blocks(response, response_length);
+    return 0;
 }
 
 /**
