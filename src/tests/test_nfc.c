@@ -136,10 +136,12 @@ void test_getBlockInfo() { //print the data for a block of the tag
         pn532_error = pn532_authenticateBlock(uid, uid_len,
                 block_number, MIFARE_CMD_AUTH_A, key_a);
         if (pn532_error != PN532_ERROR_NONE) {
+            printf("failed to authenticate\n");
             break;
         }
         pn532_error = pn532_readBlock(buff, block_number);
         if (pn532_error != PN532_ERROR_NONE) {
+            printf("failed to read\n");
             break;
         }
         printf("%d: ", block_number);
