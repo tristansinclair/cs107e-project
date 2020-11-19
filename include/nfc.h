@@ -102,4 +102,22 @@ int get_balance(int *value);
  */
 int set_balance(int balance);
 
+/**
+ * @fn get_block_info
+ * ---------------------
+ * @description: Reads information from specified block into response
+ * @param response: size 16 byte array to receive block information
+ * @param block_number: number from 0-63 that expresses which 16 byte block to read from the tag
+ * @returns: pn532 error code if tag cannot be read or block number is out of range and PN532_ERROR_NONE if tag can be read
+ */
+int get_block_info(uint8_t *response, size_t block_number);
+
+/**
+ * @fn get_tag_info
+ * ---------------------
+ * @description: Fills response with tag information upto response length.
+ * @returns: pn532 error code if tag cannot be read and PN532_ERROR_NONE if tag can be read
+ */
+int get_tag_info(uint8_t *response, size_t response_length);
+
 #endif // _NFC_H
