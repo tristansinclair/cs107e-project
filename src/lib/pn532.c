@@ -332,10 +332,3 @@ int pn532_sam_config(uint8_t mode, uint8_t timeout, uint8_t use_irq_pin)
     pn532_send_receive(PN532_COMMAND_SAMCONFIGURATION, NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
     return PN532_STATUS_OK;
 }
-
-/* int tag_dataDump() { //wrapper function to dump the data contents of a tag. Returns success/failure
-
-
-}
-
-*/

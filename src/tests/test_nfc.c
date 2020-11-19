@@ -139,12 +139,12 @@ void test_get_block_info(void)
     {
         //int timer = timer_get_ticks();
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
-        assert(pn532_error == PN532_ERROR_NONE);
+        // assert(pn532_error == PN532_ERROR_NONE);
         // timer = timer_get_ticks() - timer;
         // printf("%d\n", timer);
 
         pn532_error = pn532_read_block(buf, block_number);
-        assert(pn532_error == PN532_ERROR_NONE);
+        // assert(pn532_error == PN532_ERROR_NONE);
 
         memcpy(buf2 + 16 * block_number, buf, 16);
     }
@@ -249,9 +249,9 @@ void main(void)
     test_get_card_uid();
     printf("\n-------------------------------------------------\n\n\n");
 
-    //test_get_block_info();
+    test_get_block_info();
 
-    test_rw_mifare();
+    // test_rw_mifare();
 
     uart_putchar(EOT);
 }

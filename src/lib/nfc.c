@@ -27,7 +27,7 @@ void print_bytes(uint8_t *buf, size_t bufsize)
     for (int i = 0; i < bufsize; i++)
     {
         if (i % 16 == 0)
-            printf("\n%02d : ", i % 16);
+            printf("\n%02d : ", i / 16);
         printf("%02x ", buf[i]);
     }
     printf("\n");
