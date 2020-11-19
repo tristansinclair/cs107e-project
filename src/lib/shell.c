@@ -20,34 +20,34 @@ static const command_t commands[] = {
     {"reboot", "reboots the Raspberry Pi back to the bootloader", cmd_reboot},
     {"peek", "[address] prints the contents of memory at address", cmd_peek},
     {"poke", "[address] [value] store value into memory at address", cmd_poke},
-    {"charge", "[value] charges tag with value", cmd_charge_tag},
-    {"read", "[block number] prints block", cmd_read_tag},
-    {"pay", "[value] pays tag with value", cmd_pay_tag},
-    {"set", "[value] sets tag balance", cmd_set_tag_value},
-    {"check", "checks tag balance", cmd_check_tag_balance},
+    // {"charge", "[value] charges tag with value", cmd_charge_tag},
+    // {"read", "[block number] prints block", cmd_read_tag},
+    // {"pay", "[value] pays tag with value", cmd_pay_tag},
+    // {"set", "[value] sets tag balance", cmd_set_tag_value},
+    // {"check", "checks tag balance", cmd_check_tag_balance},
 };
 
-static void print_bytes(uint8_t *buf, size_t bufsize)
-{
-    // Print vertical line numbers
-    shell_printf("\n     ");
-    int num_length = bufsize < 16 ? bufsize : 16;
-    for (int i = 0; i < num_length; i++)
-    {
-        if (i > 9)
-            shell_printf("%d ", i);
-        else
-            shell_printf(" %d ", i);
-    }
+// static void print_bytes(uint8_t *buf, size_t bufsize)
+// {
+//     // Print vertical line numbers
+//     shell_printf("\n     ");
+//     int num_length = bufsize < 16 ? bufsize : 16;
+//     for (int i = 0; i < num_length; i++)
+//     {
+//         if (i > 9)
+//             shell_printf("%d ", i);
+//         else
+//             shell_printf(" %d ", i);
+//     }
 
-    for (int i = 0; i < bufsize; i++)
-    {
-        if (i % 16 == 0)
-            shell_printf("\n%02d : ", i / 16);
-        shell_printf("%02x ", buf[i]);
-    }
-    shell_printf("\n");
-}
+//     for (int i = 0; i < bufsize; i++)
+//     {
+//         if (i % 16 == 0)
+//             shell_printf("\n%02d : ", i / 16);
+//         shell_printf("%02x ", buf[i]);
+//     }
+//     shell_printf("\n");
+// }
 
 int cmd_read_tag(int argc, const char *argv[])
 {
@@ -59,6 +59,7 @@ int cmd_read_tag(int argc, const char *argv[])
     }
 
     // Print tag
+    return 0;
 }
 
 /**

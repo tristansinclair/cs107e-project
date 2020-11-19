@@ -144,3 +144,39 @@ int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
     pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response), params, sizeof(params), PN532_DEFAULT_TIMEOUT);
     return response[0];
 }
+
+int get_balance(uint8_t *response)
+{
+    pn532_config_normal();
+
+    uint8_t uid[MIFARE_UID_MAX_LENGTH];
+    int32_t uid_len;
+
+    while (1)
+    {
+        // Check if a card is available to read
+        uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
+        if (uid_len == PN532_STATUS_ERROR)
+            printf("Error reading tag.");
+        else
+            break;
+    }
+
+    uint8_t buf[255];
+    uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // store the default passcode for the tag blocks
+    unsigned int pn532_error = PN532_ERROR_NONE;
+
+    pn532_error = pn532_authenticate_block(uid, uid_len, 6, MIFARE_CMD_AUTH_A, key_a);
+    pn532_error = pn532_read_block(buf, 6);
+
+    if (pn532_error)
+    {
+        printf("Error: 0x%02x\r\n", pn532_error);
+    }
+
+    memcpy(response, buf, 4);
+}
+
+int set_balance()
+{
+}
