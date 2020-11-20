@@ -329,6 +329,9 @@ int pn532_config_normal()
 int pn532_sam_config(uint8_t mode, uint8_t timeout, uint8_t use_irq_pin)
 {
     uint8_t params[] = {mode, timeout, use_irq_pin};
-    pn532_send_receive(PN532_COMMAND_SAMCONFIGURATION, NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+    if (pn532_send_receive(PN532_COMMAND_SAMCONFIGURATION, NULL, 0, params, sizeof(params), PN532_DEFAULT_TIMEOUT) == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
     return PN532_STATUS_OK;
 }

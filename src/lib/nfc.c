@@ -112,24 +112,6 @@ int pn532_read_block(uint8_t *response, size_t block_number)
     return buf[0];
 }
 
-//-------------CALL FUNCTIONS END------------
-
-//--------------VX SUPPORTING-----------------
-
-void run_check_config(void)
-{
-    //helper fxn to run SamConfig and print conditions for mode configuration
-    if (pn532_config_normal() == PN532_STATUS_OK)
-    {
-        printf("SamConfig successfully executed. HAT is now in normal mode.");
-    }
-    else
-    {
-        printf("Couldn't configure HAT");
-        return;
-    }
-}
-
 int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
 {
     uint8_t params[MIFARE_BLOCK_LENGTH + 3];
@@ -143,13 +125,19 @@ int pn532_mifare_classic_write_block(uint8_t *data, size_t block_number)
         params[3 + i] = data[i];
     }
 
-    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response), params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+    if (pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, response, sizeof(response), params, sizeof(params), PN532_DEFAULT_TIMEOUT) == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
     return response[0];
 }
 
 int get_balance(int *value)
 {
-    pn532_config_normal();
+    if (pn532_config_normal() == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
 
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
@@ -204,7 +192,10 @@ int set_balance(int balance)
     unsigned int pn532_error = PN532_ERROR_NONE;
     int32_t uid_len = 0;
 
-    pn532_config_normal();
+    if (pn532_config_normal() == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
 
     // wait for card to be available for writing
     while (1)
@@ -246,28 +237,20 @@ int get_block_info(uint8_t *response, size_t block_number)
 {
     block_number = block_number > 63 ? 63 : block_number;
 
-    pn532_config_normal();
+    if (pn532_config_normal() == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
 
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
 
     while (1)
     {
-        
-        printf("Please scan your card!\n"); // Check if a card is available to read
+        // Check if a card is available to be read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
-        if (uid_len == PN532_STATUS_ERROR)
+        if (uid_len != PN532_STATUS_ERROR)
         {
-            //printf(".");
-        }
-        else
-        {
-            printf("Found card with UID: ");
-            for (uint8_t i = 0; i < uid_len; i++)
-            {
-                printf("%02x ", uid[i]);
-            }
-            printf("\r\n");
             break;
         }
     }
@@ -276,41 +259,38 @@ int get_block_info(uint8_t *response, size_t block_number)
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // store the default passcode for the tag blocks
     size_t pn532_error = PN532_ERROR_NONE;
 
-    printf("Reading block %d\r\n", block_number);
-
     pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
-    pn532_error = pn532_read_block(buf, block_number);
-    memcpy(response, buf, 16);
-
     if (pn532_error)
-        printf("Error: 0x%02x\r\n", pn532_error);
+    {
+        return pn532_error;
+    }
+    pn532_error = pn532_read_block(buf, block_number);
+    if (pn532_error)
+    {
+        return pn532_error;
+    }
+
+    memcpy(response, buf, 16);
 
     return PN532_ERROR_NONE;
 }
 
 int get_tag_info(uint8_t *response, size_t response_length)
 {
-    pn532_config_normal();
+    if (pn532_config_normal() == PN532_STATUS_ERROR)
+    {
+        return PN532_STATUS_ERROR;
+    }
 
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
 
+    // Wait until card is attempted to be read
     while (1)
     {
-        // Check if a card is available to read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
-        if (uid_len == PN532_STATUS_ERROR)
+        if (uid_len != PN532_STATUS_ERROR)
         {
-            printf(".");
-        }
-        else
-        {
-            printf("Found card with UID: ");
-            for (uint8_t i = 0; i < uid_len; i++)
-            {
-                printf("%02x ", uid[i]);
-            }
-            printf("\r\n");
             break;
         }
     }
@@ -319,18 +299,39 @@ int get_tag_info(uint8_t *response, size_t response_length)
     uint8_t key_a[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // store the default passcode for the tag blocks
     size_t pn532_error = PN532_ERROR_NONE;
 
-    printf("Reading blocks...\r\n");
-
+    // Read block data into buf
     for (size_t block_number = 0; block_number < response_length / 16; block_number++)
     {
         pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
+        if (pn532_error)
+        {
+            return pn532_error;
+        }
 
         pn532_error = pn532_read_block(buf, block_number);
+        if (pn532_error)
+        {
+            return pn532_error;
+        }
 
         memcpy(response + 16 * block_number, buf, 16);
     }
-    if (pn532_error)
-        printf("Error: 0x%02x\r\n", pn532_error);
 
     return PN532_ERROR_NONE;
 }
+
+/*---------------------- HELPER/TEST ----------------------*/
+
+// static void run_check_config(void)
+// {
+//     //helper fxn to run SamConfig and print conditions for mode configuration
+//     if (pn532_config_normal() == PN532_STATUS_OK)
+//     {
+//         printf("SamConfig successfully executed. HAT is now in normal mode.");
+//     }
+//     else
+//     {
+//         printf("Couldn't configure HAT");
+//         return;
+//     }
+// }
