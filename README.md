@@ -3,8 +3,7 @@
 ### Kai Bartolone - Vincent Xia - Tristan Sinclair
 
 ## **Project Description**
-
-Description
+This app uses the pn532 nfc sensor to simulate a payment system with nfc tags. Using the console, a user can charge, pay, set, and check the balance that is on an nfc tag. Users can also get a printout of block information on the nfc tag.
 ___
 ## **Member contribution**
 ### Kai Bartolone
@@ -17,7 +16,7 @@ ___
 
 ___
 ## **Self-evaluation**
-How well was your team able to execute on the plan in your proposal?  Any trying or heroic moments you would like to share? Of what are you particularly proud: the effort you put into it? the end product? the process you followed? what you learned along the way? Tell us about it!
+We were able to execute the proposal very well for the time span that we had. We are particularly proud of the debugging process that went into getting the pn532 sensor to work. Initially, we could not get spi communication to work with the pn532, but using the logic analyzer we were able to make connections between the byte level communications and the protocol. These situations that needed the logic analyzer happened often, and we were able to overcome faulty wirings, faulty cables, and confusing protocols. In addition to the Mifare tag protocol, something that was interesting to learn was the redundancy that was embedded into the communication systems. For example, the spi communication protocol checks the status of the pn532 multiple times in every data transaction in addition to sending an acknowledgement of the pn532 receiving a command.
 
 ___
 ## **Photos**
