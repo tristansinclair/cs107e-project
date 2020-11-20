@@ -222,7 +222,6 @@ static bool ps2_write(unsigned char command)
 
     gpio_set_input(DATA); // done writing, exit from request-to-send
     wait_for_falling_clock_edge();
-    // return (gpio_read(DATA) == 0) && (keyboard_read_scancode() == PS2_CODE_ACK); // device should respond with ack
     return true;
 }
 
@@ -232,11 +231,7 @@ void keyboard_init(unsigned int clock_gpio, unsigned int data_gpio)
     DATA = data_gpio;
 
     // Send acknowledgement to keyboard
-    if (ps2_write(PS2_CMD_RESET))
-    {
-        unsigned char response = keyboard_read_scancode();
-        (void)response; // instead ignore self-test result, may correct itself
-    }
+    ps2_write(PS2_CMD_RESET);
 
     // Configure pin interrutps
     gpio_set_input(CLK);

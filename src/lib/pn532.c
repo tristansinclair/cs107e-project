@@ -201,32 +201,30 @@ int pn532_read_frame(uint8_t *response, size_t bufsize)
         offset += 1;
         if (offset >= bufsize + 8)
         {
-            // pn532->log("Response frame preamble does not contain 0x00FF!");
             printf("\nResponse frame preamble does not contain 0x00FF!\n");
             return PN532_STATUS_ERROR;
         }
     }
     if (buf[offset] != 0xFF)
     {
-        // pn532->log("Response frame preamble does not contain 0x00FF!");
         printf("\nResponse frame preamble does not contain 0x00FF!\n");
         return PN532_STATUS_ERROR;
     }
     offset += 1;
     if (offset >= bufsize + 8)
     {
-        // pn532->log("Response contains no data!");
         printf("\nResponse contains no data\n");
         return PN532_STATUS_ERROR;
     }
+
     // Check length & length checksum match.
     uint8_t frame_len = buf[offset];
     if (((frame_len + buf[offset + 1]) & 0xFF) != 0)
     {
-        // pn532->log("Response length checksum did not match length!");
         printf("\nResponse length checksum did not match length!\n");
         return PN532_STATUS_ERROR;
     }
+
     // Check frame checksum value matches bytes.
     for (uint8_t i = 0; i < frame_len + 1; i++)
     {
@@ -235,7 +233,6 @@ int pn532_read_frame(uint8_t *response, size_t bufsize)
     checksum &= 0xFF;
     if (checksum != 0)
     {
-        // pn532->log("Response checksum did not match expected checksum");
         printf("\nResponse checksum did not match expected checksum\n");
         return PN532_STATUS_ERROR;
     }
@@ -259,7 +256,6 @@ int pn532_send_receive(uint8_t command, uint8_t *response, size_t response_lengt
     if (pn532_write_frame(buf, params_length + 2) != PN532_STATUS_OK)
     {
         pn532_wakeup();
-        // pn532->log("Trying to wakeup");
         printf("Trying to wakeup");
         return PN532_STATUS_ERROR;
     }
@@ -274,7 +270,6 @@ int pn532_send_receive(uint8_t command, uint8_t *response, size_t response_lengt
     {
         if (PN532_ACK[i] != buf[i])
         {
-            // pn532->log("Did not receive expected ACK from PN532!");
             printf("Did not receive expected ACK from PN532!");
             return PN532_STATUS_ERROR;
         }
@@ -290,7 +285,6 @@ int pn532_send_receive(uint8_t command, uint8_t *response, size_t response_lengt
     // Check that response is for the called function.
     if (!((buf[0] == PN532_PN532TOHOST) && (buf[1] == (command + 1))))
     {
-        // pn532->log("Received unexpected command response!");
         printf("Received unexpected command response!");
         return PN532_STATUS_ERROR;
     }
