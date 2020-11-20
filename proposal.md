@@ -20,23 +20,23 @@ Major task breakdown and who is responsible for each task.
 
 ## Schedule, midpoint milestones
 
-Demonstrate reading a message over SPI bus (simulate sending an SPI message from our laptops)
-Demonstrate sending a message over the SPI bus and getting the correct message
-Send the SPI message over to our laptops
-Demonstrate Waveshare library sends stuff over the SPI bus
-Make sure Waveshare library is bug free when working with staff SPI module
-Read an NFC frame of bytes
-Write an NFC frame of bytes
-Demonstrate reading and displaying NFC tag
-Demonstrate writing an NFC tag
-Add in payment functionality and integration with shell
+Demonstrate reading a message over SPI bus (simulate sending an SPI message from our laptops)  
+Demonstrate sending a message over the SPI bus and getting the correct message  
+Send the SPI message over to our laptops  
+Demonstrate Waveshare library sends stuff over the SPI bus  
+Make sure Waveshare library is bug free when working with staff SPI module  
+Read an NFC frame of bytes  
+Write an NFC frame of bytes  
+Demonstrate reading and displaying NFC tag  
+Demonstrate writing an NFC tag  
+Add in payment functionality and integration with shell  
 
 
 
 ## Resources needed, issues
 
-Staff SPI protocol implementation
-PN532 NFC HAT
-Waveshare wiki
+Staff SPI protocol implementation  
+PN532 NFC HAT  
+Waveshare wiki  
 Wakeshare demo's
 
