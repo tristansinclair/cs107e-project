@@ -7,9 +7,8 @@ ___
 This app uses the pn532 NFC sensor to simulate a payment system with nfc tags. Using the console, a user can charge, pay, set, and check the balance that is on an nfc tag. Users can also get a printout of block information on the nfc tag.
 ___
 ## **Member contribution**
-### Kai Bartolone
-### Vincent Xia
-### Tristan Sinclair
+Everyone did a little bit of everything!
+
 
 ___
 ## **References**
@@ -27,14 +26,22 @@ To begin our project we started with the goal of preparing the SPI module to be 
 ![Firmware Test](images/firmware.gif)
 First challenge... communicate with the pn532 module via SPI!
 
+___
 Our next challenge was to communicate with the module to search for and return data from an NFC tag. We began by requesting the UID from the card.
 
 ![UID Test](images/uid.gif)
 UID data from an NFC tag
 
+___
 Our final challenge was to prepare the NFC tags hold the data we wanted. We assigned an area of the data 4 bytes in order to hold an int value. This value was written and read from in order to hold a "balance".
 
 ![Balance R/W w/ LED](images/balance_led_test.gif)
 Reading and writing to a balance stored on the NFC tag
+___
+We put it all together into shell commands to be used by the user.
+![Shell Commands](images/commands.png)
 
+___
+Here's a gif of the shell in action being used to read and write to an NFC tag!
+![Shell gif](images/shell.gif)
 ___
