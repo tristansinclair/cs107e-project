@@ -246,25 +246,32 @@ static void test_card_balance(void)
 {
     int *value = 0;
 
-    printf("Running test_card_balance.\n");
     printf("Begin by placing fob on the scanner until balance is set.\n");
+    gpio_write(16, 1);
     assert(set_balance(100) == PN532_ERROR_NONE);
+    gpio_write(16, 0);
     printf("Balance set to 100\n");
 
-    timer_delay(2);
+    timer_delay(3);
     printf("\nScan fob to show balance\n");
+    gpio_write(16, 1);
     assert(get_balance(value) == PN532_ERROR_NONE);
+    gpio_write(16, 0);
     printf("Current Balance: %d\n", *value);
 
-    timer_delay(2);
+    timer_delay(3);
     printf("\nNow scan once more to deduct 25\n");
+    gpio_write(16, 1);
     assert(set_balance(75) == PN532_ERROR_NONE);
+    gpio_write(16, 0);
     printf("Balanced deducted.\n");
 
 
-    timer_delay(2);
+    timer_delay(3);
     printf("\nScan fob to show balance\n");
+    gpio_write(16, 1);
     assert(get_balance(value) == PN532_ERROR_NONE);
+    gpio_write(16, 0);
     printf("Current Balance: %d\n", *value);
     printf("test_card_balance complete.\n");
 }
@@ -272,6 +279,9 @@ static void test_card_balance(void)
 void main(void)
 {
     nfc_init(RESET_PIN, NSS_PIN);
+
+    gpio_init();
+    gpio_set_output(16);
 
     printf("\n\n------------- Firmware Version Test -------------\n");
     test_firmware_version(); // request and print firmware version
