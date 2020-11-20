@@ -105,6 +105,12 @@ int cmd_pay_tag(int argc, const char *argv[])
         return 1;
     }
 
+    if (strtonum(argv[1], NULL) == 0)
+    {
+        shell_printf("Error: pay takes an integer [value] & doesn't allow 0\n");
+        return 1;
+    }
+
     shell_printf("Please scan your card!\n");
     int *balance = 0;
 
@@ -133,6 +139,12 @@ int cmd_charge_tag(int argc, const char *argv[])
     if (argc != 2)
     {
         shell_printf("Error: charge takes 1 argument [value]\n");
+        return 1;
+    }
+
+    if (strtonum(argv[1], NULL) == 0)
+    {
+        shell_printf("Error: charge takes an integer [value] & doesn't allow 0\n");
         return 1;
     }
 
@@ -167,12 +179,27 @@ int cmd_read_tag(int argc, const char *argv[])
     if (argc == 1)
     {
         response_length = 1024;
-        get_tag_info(response, response_length);
+        printf("Please hold your card on the scanner until the scan is complete!\n");
+        int error_code = get_tag_info(response, response_length);
+        if (error_code != PN532_ERROR_NONE)
+        {
+            shell_printf("Error: 0x%02x\r\n", error_code);
+            return 1;
+        }
+        shell_printf("Blocks 0-63:\n");
     }
     else if (argc == 2)
     {
         response_length = 16;
-        get_block_info(response, strtonum(argv[1], NULL));
+        printf("Please hold your card on the scanner until the scan is complete!\n");
+        int error_code = get_block_info(response, strtonum(argv[1], NULL));
+
+        if (error_code != PN532_ERROR_NONE)
+        {
+            shell_printf("Error: 0x%02x\r\n", error_code);
+            return 1;
+        }
+        shell_printf("Reading block %d\n", strtonum(argv[1], NULL));
     }
     else
     {
