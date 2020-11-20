@@ -97,8 +97,8 @@ int pn532_read_block(uint8_t *response, size_t block_number)
     uint8_t params[] = {0x01, MIFARE_CMD_READ, block_number & 0xFF};
     uint8_t buf[MIFARE_BLOCK_LENGTH + 1];
     // Send InDataExchange request to read block of MiFare data.
-    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, buf, sizeof(buf),
-                       params, sizeof(params), PN532_DEFAULT_TIMEOUT);
+
+    pn532_send_receive(PN532_COMMAND_INDATAEXCHANGE, buf, sizeof(buf), params, sizeof(params), PN532_DEFAULT_TIMEOUT);
 
     // Check first response is 0x00 to show success.
     if (buf[0] != PN532_ERROR_NONE)
@@ -154,7 +154,6 @@ int get_balance(int *value)
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
 
-    //printf("Please scan your card!\n");
     while (1)
     {
         // Check if a card is available to read
@@ -172,7 +171,6 @@ int get_balance(int *value)
 
     if (pn532_error)
     {
-        //printf("Error: 0x%02x\r\n", pn532_error);
         return pn532_error;
     }
 
@@ -211,33 +209,19 @@ int set_balance(int balance)
     {
         // Check if a card is available to read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, 1000);
-        if (uid_len == PN532_STATUS_ERROR)
-        {
-            //printf(".");
-        }
-        else
-        {
-            //printf("\nRFID/NFC card found.\n");
+        if (uid_len != PN532_STATUS_ERROR)
             break;
-        }
     }
 
     // Write to balance block
     uint8_t block_number = BALANCE_BLOCK;
-    pn532_error = pn532_authenticate_block(uid, uid_len,
-                                           block_number, MIFARE_CMD_AUTH_A, key_a);
+    pn532_error = pn532_authenticate_block(uid, uid_len, block_number, MIFARE_CMD_AUTH_A, key_a);
     if (pn532_error)
-    {
-        //printf("Error: 0x%02x\r\n", pn532_error);
         return pn532_error;
-    }
+
     pn532_error = pn532_mifare_classic_write_block(DATA, block_number);
     if (pn532_error)
-    {
-        // printf("Error: 0x%02x\r\n", pn532_error);
-        // return -1;
         return pn532_error;
-    }
 
     return PN532_ERROR_NONE;
 }
@@ -253,7 +237,7 @@ int get_block_info(uint8_t *response, size_t block_number)
 
     while (1)
     {
-        
+
         printf("Please scan your card!\n"); // Check if a card is available to read
         uid_len = pn532_read_passive_target(uid, PN532_MIFARE_ISO14443A, PN532_DEFAULT_TIMEOUT);
         if (uid_len == PN532_STATUS_ERROR)
