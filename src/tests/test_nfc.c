@@ -18,12 +18,12 @@
 static const unsigned int RESET_PIN = GPIO_PIN20;
 static const unsigned int NSS_PIN = GPIO_PIN4;
 
-/* 
+/** 
  * @fn test_firmware_version
  * ---------------------
  * @description: request a firmware response from the pn532 module
  */
-void test_firmware_version(void)
+static void test_firmware_version(void)
 {
     uint8_t buf[4];
     pn532_get_firmware_version(buf);
@@ -39,7 +39,7 @@ void test_firmware_version(void)
  * ---------------------
  * @description: configure sam mode so the hat is in normal mode
  */
-void test_sam_config(void)
+static void test_sam_config(void)
 {
     uint8_t buf[4];
 
@@ -59,12 +59,12 @@ void test_sam_config(void)
     };
 }
 
-/* 
+/** 
  * @fn test_get_card_uid
  * ---------------------
  * @description: make sure a MiFare card UID can be obtained using pn532_ReadPassiveTarget
  */
-void test_get_card_uid(void)
+static void test_get_card_uid(void)
 {
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
     int32_t uid_len;
@@ -84,7 +84,7 @@ void test_get_card_uid(void)
         }
         else
         {
-            printf("Found card with UID: ");
+            printf("\nFound card with UID: ");
             for (uint8_t i = 0; i < uid_len; i++)
             {
                 printf("%02x ", uid[i]);
@@ -95,12 +95,12 @@ void test_get_card_uid(void)
     }
 }
 
-/* 
+/** 
  * @fn test_get_block_info
  * ---------------------
  * @description: prints block data read from card
  */
-void test_get_block_info(void)
+static void test_get_block_info(void)
 {
     pn532_config_normal();
 
@@ -117,7 +117,7 @@ void test_get_block_info(void)
         }
         else
         {
-            printf("Found card with UID: ");
+            printf("\nFound card with UID: ");
             for (uint8_t i = 0; i < uid_len; i++)
             {
                 printf("%02x ", uid[i]);
@@ -156,7 +156,12 @@ void test_get_block_info(void)
     }
 }
 
-int test_rw_mifare(void)
+/** 
+ * @fn test_rw_mifare
+ * ---------------------
+ * @description: tests reading and writing to a mifare card
+ */
+static int test_rw_mifare(void)
 {
     uint8_t buf[255];
     uint8_t uid[MIFARE_UID_MAX_LENGTH];
@@ -232,7 +237,12 @@ int test_rw_mifare(void)
     return PN532_ERROR_NONE;
 }
 
-void test_card_balance(void)
+/** 
+ * @fn test_card_balance
+ * ---------------------
+ * @description: tests setting and reading card balance
+ */
+static void test_card_balance(void)
 {
     int *value = 0;
 
@@ -263,20 +273,29 @@ void main(void)
 {
     nfc_init(RESET_PIN, NSS_PIN);
 
-    // printf("\n\n------------- Firmware Version Test -------------\n");
-    // test_firmware_version(); // request and print firmware version
-    // printf("\n-------------------------------------------------\n\n\n");
+    printf("\n\n------------- Firmware Version Test -------------\n");
+    test_firmware_version(); // request and print firmware version
+    printf("\n-------------------------------------------------\n\n\n");
 
-    // /* ----------VX Tests---------- */
-    // printf("----------------- SamConfig Test ----------------\n");
-    // test_sam_config();
-    // printf("\n-------------------------------------------------\n\n\n");
+    printf("----------------- SamConfig Test ----------------\n");
+    test_sam_config();
+    printf("\n-------------------------------------------------\n\n\n");
 
-    // printf("------------------ Get Card UID -----------------\n");
-    // test_get_card_uid();
-    // printf("\n-------------------------------------------------\n\n\n");
+    printf("------------------ Get Card UID -----------------\n");
+    test_get_card_uid();
+    printf("\n-------------------------------------------------\n\n\n");
 
+    printf("----------------- Get Block Info ----------------\n");
+    test_get_block_info();
+    printf("\n-------------------------------------------------\n\n\n");
+
+    printf("-------------- Mifare Card R/W Test -------------\n");
+    assert(test_rw_mifare() == PN532_ERROR_NONE);
+    printf("\n-------------------------------------------------\n\n\n");
+
+    printf("--------------- Card Balance Tests --------------\n");
     test_card_balance();
+    printf("\n-------------------------------------------------\n");
 
     uart_putchar(EOT);
 }
